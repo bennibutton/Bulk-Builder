@@ -1,10 +1,9 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>COGs — Cocktail Costing</title>
+<title>Batch Cocktail Builder — COGs Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
   :root {
@@ -12,739 +11,472 @@
     --surface: #161618;
     --border: #2a2a2e;
     --accent: #e8c56d;
-    --accent2: #d4545c;
     --text: #e8e6e1;
     --muted: #6b6a67;
     --green: #5ec97a;
     --amber: #e8c56d;
     --red: #d4545c;
   }
-
-- { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘DM Mono’, monospace;
-min-height: 100vh;
-padding: 40px 20px;
-position: relative;
-overflow-x: hidden;
-}
-
-body::before {
-content: ‘’;
-position: fixed;
-top: -200px;
-right: -200px;
-width: 500px;
-height: 500px;
-background: radial-gradient(circle, rgba(232,197,109,0.06) 0%, transparent 70%);
-pointer-events: none;
-}
-
-body::after {
-content: ‘’;
-position: fixed;
-bottom: -100px;
-left: -100px;
-width: 400px;
-height: 400px;
-background: radial-gradient(circle, rgba(212,84,92,0.05) 0%, transparent 70%);
-pointer-events: none;
-}
-
-.container {
-max-width: 780px;
-margin: 0 auto;
-animation: fadeUp 0.6s ease both;
-}
-
-@keyframes fadeUp {
-from { opacity: 0; transform: translateY(20px); }
-to { opacity: 1; transform: translateY(0); }
-}
-
-.header {
-border-bottom: 1px solid var(–border);
-padding-bottom: 28px;
-margin-bottom: 36px;
-}
-
-.label-tag {
-font-size: 10px;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–accent);
-margin-bottom: 10px;
-display: block;
-}
-
-h1 {
-font-family: ‘Playfair Display’, serif;
-font-size: clamp(32px, 6vw, 52px);
-font-weight: 900;
-line-height: 1.05;
-letter-spacing: -0.02em;
-color: var(–text);
-}
-
-h1 span {
-color: var(–accent);
-}
-
-.subtitle {
-margin-top: 10px;
-font-size: 11px;
-color: var(–muted);
-letter-spacing: 0.08em;
-}
-
-/* EDITABLE INPUTS */
-.inputs-section {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 28px;
-margin-bottom: 28px;
-animation: fadeUp 0.6s ease 0.1s both;
-}
-
-.section-title {
-font-size: 9px;
-letter-spacing: 0.25em;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 20px;
-display: flex;
-align-items: center;
-gap: 10px;
-}
-
-.section-title::after {
-content: ‘’;
-flex: 1;
-height: 1px;
-background: var(–border);
-}
-
-.input-grid {
-display: grid;
-gap: 14px;
-}
-
-.input-row {
-display: grid;
-grid-template-columns: 1fr auto auto auto;
-gap: 10px;
-align-items: center;
-}
-
-.input-label {
-font-size: 12px;
-color: var(–text);
-letter-spacing: 0.03em;
-}
-
-.input-sub {
-font-size: 10px;
-color: var(–muted);
-margin-top: 2px;
-}
-
-input[type=“number”] {
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-color: var(–accent);
-font-family: ‘DM Mono’, monospace;
-font-size: 13px;
-padding: 8px 10px;
-width: 90px;
-text-align: right;
-transition: border-color 0.2s;
-outline: none;
-}
-
-input[type=“number”]:focus {
-border-color: var(–accent);
-}
-
-.input-unit {
-font-size: 10px;
-color: var(–muted);
-width: 28px;
-}
-
-/* RECIPE TABLE */
-.recipe-section {
-animation: fadeUp 0.6s ease 0.2s both;
-margin-bottom: 28px;
-}
-
-.recipe-table {
-width: 100%;
-border-collapse: collapse;
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-overflow: hidden;
-}
-
-.recipe-table thead tr {
-background: #111113;
-border-bottom: 1px solid var(–border);
-}
-
-.recipe-table th {
-font-size: 9px;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–muted);
-padding: 12px 16px;
-text-align: left;
-font-weight: 400;
-}
-
-.recipe-table th:not(:first-child) {
-text-align: right;
-}
-
-.recipe-table td {
-padding: 14px 16px;
-font-size: 13px;
-border-bottom: 1px solid var(–border);
-vertical-align: top;
-}
-
-.recipe-table td:not(:first-child) {
-text-align: right;
-font-variant-numeric: tabular-nums;
-}
-
-.recipe-table tr:last-child td {
-border-bottom: none;
-}
-
-.recipe-table tr:hover td {
-background: rgba(255,255,255,0.015);
-}
-
-.ing-name {
-font-size: 13px;
-color: var(–text);
-}
-
-.ing-note {
-font-size: 10px;
-color: var(–muted);
-font-style: italic;
-margin-top: 3px;
-}
-
-.ml-val {
-color: var(–muted);
-}
-
-.cost-val {
-color: var(–text);
-}
-
-.per-ml {
-color: var(–muted);
-font-size: 11px;
-}
-
-.cost-highlight {
-color: var(–accent);
-font-weight: 500;
-}
-
-.garnish-row td {
-color: var(–muted);
-font-style: italic;
-}
-
-/* SUMMARY CARDS */
-.summary-grid {
-display: grid;
-grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-gap: 14px;
-margin-bottom: 28px;
-animation: fadeUp 0.6s ease 0.3s both;
-}
-
-.card {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 20px;
-position: relative;
-overflow: hidden;
-}
-
-.card::before {
-content: ‘’;
-position: absolute;
-top: 0; left: 0; right: 0;
-height: 2px;
-}
-
-.card.accent::before { background: var(–accent); }
-.card.green::before { background: var(–green); }
-.card.red::before { background: var(–red); }
-.card.amber::before { background: #7b9ccd; }
-
-.card-label {
-font-size: 9px;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–muted);
-margin-bottom: 10px;
-}
-
-.card-value {
-font-family: ‘Playfair Display’, serif;
-font-size: 28px;
-font-weight: 700;
-line-height: 1;
-}
-
-.card.accent .card-value { color: var(–accent); }
-.card.green .card-value { color: var(–green); }
-.card.red .card-value { color: var(–red); }
-.card.amber .card-value { color: #7b9ccd; }
-
-.card-sub {
-font-size: 10px;
-color: var(–muted);
-margin-top: 6px;
-}
-
-/* COGs METER */
-.meter-section {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 24px 28px;
-margin-bottom: 28px;
-animation: fadeUp 0.6s ease 0.35s both;
-}
-
-.meter-header {
-display: flex;
-justify-content: space-between;
-align-items: baseline;
-margin-bottom: 14px;
-}
-
-.meter-title {
-font-size: 9px;
-letter-spacing: 0.2em;
-text-transform: uppercase;
-color: var(–muted);
-}
-
-.meter-pct {
-font-family: ‘Playfair Display’, serif;
-font-size: 22px;
-font-weight: 700;
-}
-
-.meter-track {
-height: 6px;
-background: var(–border);
-border-radius: 3px;
-overflow: hidden;
-margin-bottom: 10px;
-}
-
-.meter-fill {
-height: 100%;
-border-radius: 3px;
-transition: width 0.8s cubic-bezier(0.25,1,0.5,1);
-}
-
-.meter-legend {
-display: flex;
-gap: 16px;
-font-size: 10px;
-color: var(–muted);
-}
-
-.legend-dot {
-display: inline-block;
-width: 6px;
-height: 6px;
-border-radius: 50%;
-margin-right: 4px;
-vertical-align: middle;
-}
-
-/* SELL PRICE TOOL */
-.sell-section {
-background: var(–surface);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 24px 28px;
-animation: fadeUp 0.6s ease 0.4s both;
-}
-
-.sell-grid {
-display: grid;
-grid-template-columns: 1fr 1fr;
-gap: 14px;
-margin-top: 16px;
-}
-
-.sell-row {
-display: flex;
-justify-content: space-between;
-align-items: center;
-padding: 10px 14px;
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-font-size: 12px;
-}
-
-.sell-row-label { color: var(–muted); }
-
-.sell-row-val {
-color: var(–text);
-font-variant-numeric: tabular-nums;
-}
-
-.sell-row-val.good { color: var(–green); }
-.sell-row-val.warn { color: var(–amber); }
-.sell-row-val.bad { color: var(–red); }
-
-.sell-input-row {
-grid-column: 1 / -1;
-display: flex;
-align-items: center;
-gap: 12px;
-padding: 12px 14px;
-background: var(–bg);
-border: 1px solid var(–accent);
-border-radius: 4px;
-}
-
-.sell-input-row label {
-font-size: 11px;
-color: var(–accent);
-flex: 1;
-letter-spacing: 0.05em;
-}
-
-.sell-input-row input {
-width: 100px;
-border-color: var(–accent);
-}
-
-.footer {
-margin-top: 36px;
-padding-top: 20px;
-border-top: 1px solid var(–border);
-display: flex;
-justify-content: space-between;
-font-size: 10px;
-color: var(–muted);
-letter-spacing: 0.06em;
-animation: fadeUp 0.6s ease 0.5s both;
-}
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Mono', monospace;
+    min-height: 100vh; padding: 40px 20px;
+    position: relative; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed;
+    top: -200px; right: -200px; width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(232,197,109,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  body::after {
+    content: ''; position: fixed;
+    bottom: -100px; left: -100px; width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212,84,92,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .container { max-width: 820px; margin: 0 auto; animation: fadeUp 0.6s ease both; }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 36px; }
+  .label-tag {
+    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--accent); margin-bottom: 10px; display: block;
+  }
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 6vw, 52px); font-weight: 900;
+    line-height: 1.05; letter-spacing: -0.02em; color: var(--text);
+  }
+  h1 span { color: var(--accent); }
+  .subtitle { margin-top: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+  .section-title {
+    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 20px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+  .inputs-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 28px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease 0.1s both;
+  }
+  .input-grid { display: grid; gap: 14px; }
+  .input-row {
+    display: grid;
+    grid-template-columns: 1fr 80px auto 90px auto 90px;
+    gap: 8px; align-items: center;
+  }
+  .input-row.garnish-input { grid-template-columns: 1fr 1fr auto 90px; }
+  input[type="text"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
+    padding: 8px 10px; width: 100%; transition: border-color 0.2s; outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: var(--muted); }
+  input[type="number"] {
+    background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
+    color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px;
+    padding: 8px 10px; width: 100%; text-align: right;
+    transition: border-color 0.2s; outline: none;
+  }
+  input[type="number"]:focus { border-color: var(--accent); }
+  .input-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .input-sub {
+    font-size: 9px; color: var(--muted); letter-spacing: 0.05em;
+    grid-column: 1 / -1; margin-top: -8px; padding-left: 2px;
+  }
+  .recipe-section { animation: fadeUp 0.6s ease 0.2s both; margin-bottom: 28px; }
+  .recipe-table {
+    width: 100%; border-collapse: collapse;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; overflow: hidden;
+  }
+  .recipe-table thead tr { background: #111113; border-bottom: 1px solid var(--border); }
+  .recipe-table th {
+    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--muted); padding: 12px 16px; text-align: left; font-weight: 400;
+  }
+  .recipe-table th:not(:first-child) { text-align: right; }
+  .recipe-table td {
+    padding: 14px 16px; font-size: 13px;
+    border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  .recipe-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+  .recipe-table tr:last-child td { border-bottom: none; }
+  .recipe-table tr:hover td { background: rgba(255,255,255,0.015); }
+  .ing-name { font-size: 13px; color: var(--text); }
+  .ing-note { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 3px; }
+  .ml-val { color: var(--muted); }
+  .per-ml { color: var(--muted); font-size: 11px; }
+  .cost-highlight { color: var(--accent); font-weight: 500; }
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 14px; margin-bottom: 28px; animation: fadeUp 0.6s ease 0.3s both;
+  }
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 20px; position: relative; overflow: hidden;
+  }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
+  .card.accent::before { background: var(--accent); }
+  .card.green::before { background: var(--green); }
+  .card.red::before { background: var(--red); }
+  .card.blue::before { background: #7b9ccd; }
+  .card-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .card-value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1; }
+  .card.accent .card-value { color: var(--accent); }
+  .card.green .card-value { color: var(--green); }
+  .card.red .card-value { color: var(--red); }
+  .card.blue .card-value { color: #7b9ccd; }
+  .card-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
+  .gst-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 24px 28px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease 0.32s both;
+  }
+  .gst-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .gst-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px; font-size: 12px;
+  }
+  .gst-row.span2 { grid-column: 1 / -1; }
+  .gst-row-label { color: var(--muted); }
+  .gst-row-val { color: var(--text); font-variant-numeric: tabular-nums; }
+  .gst-row-val.accent { color: var(--accent); }
+  .gst-row-val.green { color: var(--green); }
+  .gst-row-val.purple { color: #a78bfa; }
+  .gst-row-val.warn { color: var(--amber); }
+  .gst-row-val.bad { color: var(--red); }
+  .meter-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 24px 28px; margin-bottom: 28px;
+    animation: fadeUp 0.6s ease 0.35s both;
+  }
+  .meter-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+  .meter-title { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+  .meter-pct { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
+  .meter-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+  .meter-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
+  .meter-legend { display: flex; gap: 16px; font-size: 10px; color: var(--muted); }
+  .legend-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+  .sell-section {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 6px; padding: 24px 28px;
+    animation: fadeUp 0.6s ease 0.4s both; margin-bottom: 28px;
+  }
+  .sell-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+  .sell-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--bg);
+    border: 1px solid var(--border); border-radius: 4px; font-size: 12px;
+  }
+  .sell-row-label { color: var(--muted); }
+  .sell-row-val { color: var(--text); font-variant-numeric: tabular-nums; }
+  .sell-row-val.good { color: var(--green); }
+  .sell-row-val.warn { color: var(--amber); }
+  .sell-row-val.bad { color: var(--red); }
+  .sell-input-row {
+    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; background: var(--bg);
+    border: 1px solid var(--accent); border-radius: 4px;
+  }
+  .sell-input-row label { font-size: 11px; color: var(--accent); flex: 1; letter-spacing: 0.05em; }
+  .sell-input-row input { width: 100px; border-color: var(--accent); }
+  .footer {
+    padding-top: 20px; border-top: 1px solid var(--border);
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: var(--muted); letter-spacing: 0.06em;
+    animation: fadeUp 0.6s ease 0.5s both;
+  }
+  @media (max-width: 600px) {
+    .input-row { grid-template-columns: 1fr 1fr; }
+    .input-row.garnish-input { grid-template-columns: 1fr 1fr; }
+    .sell-grid, .gst-grid { grid-template-columns: 1fr; }
+    .gst-row.span2 { grid-column: 1; }
+  }
 </style>
-
 </head>
 <body>
 <div class="container">
 
   <div class="header">
-    <span class="label-tag">⬡ Beverage Costing Tool</span>
-    <h1>WATERMELON <span>PAVLOVA</span></h1>
-    <div class="subtitle">160ml serve &nbsp;·&nbsp; spirits + mixer + soda build &nbsp;·&nbsp; COGs analysis</div>
+    <span class="label-tag">&#x2B21; Beverage Costing Tool</span>
+    <h1>BATCH <span>COCKTAIL BUILDER</span></h1>
+    <div class="subtitle">COGs analysis</div>
   </div>
 
-  <!-- EDITABLE STOCK PRICING -->
-
   <div class="inputs-section">
-    <div class="section-title">Stock pricing — edit to recalculate</div>
+    <div class="section-title">Stock pricing &#8212; edit all fields to recalculate</div>
     <div class="input-grid">
+
       <div class="input-row">
-        <div>
-          <div class="input-label">Pavlova Spirit</div>
-          <div class="input-sub">Bottle / bulk size (ml)</div>
-        </div>
-        <input type="number" id="pav-vol" value="10000" step="100" oninput="calc()">
-        <span class="input-unit">ml</span>
-        <input type="number" id="pav-cost" value="663.00" step="0.01" oninput="calc()">
+        <input type="text" id="name-1" value="Pavlova Spirit" placeholder="Ingredient name" oninput="calc()">
+        <input type="number" id="ml-1" value="30" step="1" min="0" oninput="calc()">
+        <span class="input-unit">ml serve</span>
+        <input type="number" id="vol-1" value="10000" step="100" oninput="calc()">
+        <span class="input-unit">ml stock</span>
+        <input type="number" id="cost-1" value="663.00" step="0.01" oninput="calc()">
       </div>
+      <div class="input-sub">&#8592; name &nbsp;&middot;&nbsp; serve ml &nbsp;&middot;&nbsp; bulk volume &nbsp;&middot;&nbsp; bulk cost $</div>
+
       <div class="input-row">
-        <div>
-          <div class="input-label">Giffard Watermelon Syrup</div>
-          <div class="input-sub">Bottle / bulk size (ml)</div>
-        </div>
-        <input type="number" id="gif-vol" value="6000" step="100" oninput="calc()">
-        <span class="input-unit">ml</span>
-        <input type="number" id="gif-cost" value="142.35" step="0.01" oninput="calc()">
+        <input type="text" id="name-2" value="Giffard Watermelon Syrup" placeholder="Ingredient name" oninput="calc()">
+        <input type="number" id="ml-2" value="15" step="1" min="0" oninput="calc()">
+        <span class="input-unit">ml serve</span>
+        <input type="number" id="vol-2" value="6000" step="100" oninput="calc()">
+        <span class="input-unit">ml stock</span>
+        <input type="number" id="cost-2" value="142.35" step="0.01" oninput="calc()">
       </div>
+
       <div class="input-row">
-        <div>
-          <div class="input-label">Supasawa Cocktail Mixer</div>
-          <div class="input-sub">Bottle / bulk size (ml)</div>
-        </div>
-        <input type="number" id="sup-vol" value="4500" step="100" oninput="calc()">
-        <span class="input-unit">ml</span>
-        <input type="number" id="sup-cost" value="150.01" step="0.01" oninput="calc()">
+        <input type="text" id="name-3" value="Supasawa Cocktail Mixer" placeholder="Ingredient name" oninput="calc()">
+        <input type="number" id="ml-3" value="15" step="1" min="0" oninput="calc()">
+        <span class="input-unit">ml serve</span>
+        <input type="number" id="vol-3" value="4500" step="100" oninput="calc()">
+        <span class="input-unit">ml stock</span>
+        <input type="number" id="cost-3" value="150.01" step="0.01" oninput="calc()">
       </div>
+
       <div class="input-row">
-        <div>
-          <div class="input-label">Soda Water</div>
-          <div class="input-sub">House / postmix cost per litre</div>
-        </div>
-        <input type="number" id="soda-vol" value="1000" step="100" oninput="calc()">
-        <span class="input-unit">ml</span>
-        <input type="number" id="soda-cost" value="0.20" step="0.01" oninput="calc()">
+        <input type="text" id="name-4" value="Soda Water" placeholder="Ingredient name" oninput="calc()">
+        <input type="number" id="ml-4" value="100" step="1" min="0" oninput="calc()">
+        <span class="input-unit">ml serve</span>
+        <input type="number" id="vol-4" value="1000" step="100" oninput="calc()">
+        <span class="input-unit">ml stock</span>
+        <input type="number" id="cost-4" value="0.20" step="0.01" oninput="calc()">
       </div>
-      <div class="input-row">
-        <div>
-          <div class="input-label">Garnish (flat est.)</div>
-          <div class="input-sub">Per serve cost</div>
-        </div>
-        <div></div>
-        <span class="input-unit"></span>
-        <input type="number" id="garnish-cost" value="0.35" step="0.01" oninput="calc()">
+
+      <div class="input-row garnish-input">
+        <input type="text" id="name-garnish" value="Garnish" placeholder="Garnish description" oninput="calc()">
+        <span class="input-unit" style="font-size:10px;color:var(--muted);">flat per serve cost &#8594;</span>
+        <span></span>
+        <input type="number" id="cost-garnish" value="0.35" step="0.01" oninput="calc()">
       </div>
+
     </div>
   </div>
 
-  <!-- RECIPE TABLE -->
-
   <div class="recipe-section">
-    <div class="section-title">Recipe build — per serve</div>
+    <div class="section-title">Recipe build &#8212; per serve</div>
     <table class="recipe-table">
       <thead>
         <tr>
           <th>Ingredient</th>
           <th>ml</th>
-          <th>¢/ml</th>
+          <th>&#162;/ml</th>
           <th>Serve cost</th>
         </tr>
       </thead>
-      <tbody id="recipe-body">
-        <!-- populated by JS -->
-      </tbody>
+      <tbody id="recipe-body"></tbody>
     </table>
   </div>
 
-  <!-- SUMMARY CARDS -->
-
   <div class="summary-grid">
     <div class="card accent">
-      <div class="card-label">Liquid cost / serve</div>
-      <div class="card-value" id="c-liquid">—</div>
-      <div class="card-sub">excl. garnish</div>
+      <div class="card-label">Liquid COGs / serve</div>
+      <div class="card-value" id="c-liquid">&#8212;</div>
+      <div class="card-sub">excl. garnish &middot; ex-GST</div>
     </div>
     <div class="card green">
-      <div class="card-label">Total COGS / serve</div>
-      <div class="card-value" id="c-total">—</div>
-      <div class="card-sub">incl. garnish</div>
+      <div class="card-label">Total COGs / serve</div>
+      <div class="card-value" id="c-total">&#8212;</div>
+      <div class="card-sub">incl. garnish &middot; ex-GST</div>
     </div>
     <div class="card red">
       <div class="card-label">Serves per stock</div>
-      <div class="card-value" id="c-serves">—</div>
+      <div class="card-value" id="c-serves">&#8212;</div>
       <div class="card-sub">limiting ingredient</div>
     </div>
-    <div class="card amber">
-      <div class="card-label">Liquor cost only</div>
-      <div class="card-value" id="c-spirit">—</div>
-      <div class="card-sub">Pavlova 30ml</div>
+    <div class="card blue">
+      <div class="card-label">Spirit cost only</div>
+      <div class="card-value" id="c-spirit">&#8212;</div>
+      <div class="card-sub" id="c-spirit-label">ingredient 1</div>
     </div>
   </div>
 
-  <!-- COGs METER -->
+  <div class="gst-section">
+    <div class="section-title">GST breakdown on sell price</div>
+    <div class="gst-grid">
+      <div class="gst-row">
+        <span class="gst-row-label">Sell price (inc. GST)</span>
+        <span class="gst-row-val accent" id="g-sell-inc">&#8212;</span>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">GST component (10%)</span>
+        <span class="gst-row-val" id="g-gst-amt">&#8212;</span>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">Net revenue (ex-GST)</span>
+        <span class="gst-row-val green" id="g-sell-ex">&#8212;</span>
+      </div>
+      <div class="gst-row">
+        <span class="gst-row-label">COGs % on net revenue</span>
+        <span class="gst-row-val purple" id="g-cogs-net">&#8212;</span>
+      </div>
+      <div class="gst-row span2">
+        <span class="gst-row-label">GP % on net ex-GST revenue</span>
+        <span class="gst-row-val green" id="g-gp-net">&#8212;</span>
+      </div>
+    </div>
+  </div>
 
   <div class="meter-section">
-    <div class="section-title">COGs % at your sell price</div>
+    <div class="section-title">COGs % &#8212; calculated on ex-GST net revenue</div>
     <div class="meter-header">
       <span class="meter-title">Cost of goods sold</span>
-      <span class="meter-pct" id="cogs-pct">—</span>
+      <span class="meter-pct" id="cogs-pct">&#8212;</span>
     </div>
     <div class="meter-track">
       <div class="meter-fill" id="meter-fill" style="width:0%"></div>
     </div>
     <div class="meter-legend">
-      <span><span class="legend-dot" style="background:#5ec97a"></span>Ideal ≤18%</span>
-      <span><span class="legend-dot" style="background:#e8c56d"></span>OK 18–25%</span>
+      <span><span class="legend-dot" style="background:#5ec97a"></span>Ideal &le;18%</span>
+      <span><span class="legend-dot" style="background:#e8c56d"></span>OK 18&#8211;25%</span>
       <span><span class="legend-dot" style="background:#d4545c"></span>High 25%+</span>
     </div>
   </div>
 
-  <!-- SELL PRICE TOOL -->
-
   <div class="sell-section">
-    <div class="section-title">Sell price scenarios</div>
+    <div class="section-title">Sell price scenarios &#8212; inc. GST menu price targets</div>
     <div class="sell-grid">
       <div class="sell-row">
         <span class="sell-row-label">Breakeven (0% GP)</span>
-        <span class="sell-row-val" id="s-be">—</span>
+        <span class="sell-row-val" id="s-be">&#8212;</span>
       </div>
       <div class="sell-row">
         <span class="sell-row-label">75% GP target</span>
-        <span class="sell-row-val good" id="s-75">—</span>
+        <span class="sell-row-val good" id="s-75">&#8212;</span>
       </div>
       <div class="sell-row">
         <span class="sell-row-label">80% GP target</span>
-        <span class="sell-row-val good" id="s-80">—</span>
+        <span class="sell-row-val good" id="s-80">&#8212;</span>
       </div>
       <div class="sell-row">
         <span class="sell-row-label">82% GP target</span>
-        <span class="sell-row-val good" id="s-82">—</span>
+        <span class="sell-row-val good" id="s-82">&#8212;</span>
       </div>
       <div class="sell-input-row">
-        <label>Your sell price (AUD) →</label>
+        <label>Your menu price inc. GST (AUD) &#8594;</label>
         <input type="number" id="sell-price" value="22.00" step="0.50" oninput="calc()">
         <span class="input-unit">$</span>
       </div>
       <div class="sell-row">
-        <span class="sell-row-label">GP at your price</span>
-        <span class="sell-row-val" id="s-gp">—</span>
+        <span class="sell-row-label">GP % (ex-GST basis)</span>
+        <span class="sell-row-val" id="s-gp">&#8212;</span>
       </div>
       <div class="sell-row">
-        <span class="sell-row-label">COGs % at your price</span>
-        <span class="sell-row-val" id="s-cogs">—</span>
+        <span class="sell-row-label">COGs % (ex-GST basis)</span>
+        <span class="sell-row-val" id="s-cogs">&#8212;</span>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <span>WATERMELON PAVLOVA · 160ml build</span>
-    <span>All figures AUD · GST exclusive</span>
+    <span>BATCH COCKTAIL BUILDER &middot; COGs Analysis</span>
+    <span>All figures AUD &middot; Menu price inc. GST &middot; COGs ex-GST</span>
   </div>
 
 </div>
-
 <script>
-const recipe = [
-  { name: 'Pavlova Spirit',          note: '',               ml: 30,  costId: 'pav-cost',     volId: 'pav-vol' },
-  { name: 'Giffard Watermelon Syrup',note: '',               ml: 15,  costId: 'gif-cost',     volId: 'gif-vol' },
-  { name: 'Supasawa Cocktail Mixer', note: '',               ml: 15,  costId: 'sup-cost',     volId: 'sup-vol' },
-  { name: 'Soda Water',              note: 'in-glass finish',ml: 100, costId: 'soda-cost',    volId: 'soda-vol' },
-];
-
+var GST = 0.10;
 function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
-function fmt(n, d=2) { return '$' + n.toFixed(d); }
+function t(id) { return document.getElementById(id).value || ''; }
+function fmt(n, d) { d = d === undefined ? 2 : d; return '$' + n.toFixed(d); }
 function fmtPct(n) { return n.toFixed(1) + '%'; }
-
 function cogsColor(pct) {
   if (pct <= 18) return '#5ec97a';
   if (pct <= 25) return '#e8c56d';
   return '#d4545c';
 }
-
 function calc() {
-  let liquidCost = 0;
-  let spiritCost = 0;
-  const tbody = document.getElementById('recipe-body');
+  var ingredients = [
+    { nameId: 'name-1', mlId: 'ml-1', volId: 'vol-1', costId: 'cost-1', note: '' },
+    { nameId: 'name-2', mlId: 'ml-2', volId: 'vol-2', costId: 'cost-2', note: '' },
+    { nameId: 'name-3', mlId: 'ml-3', volId: 'vol-3', costId: 'cost-3', note: '' },
+    { nameId: 'name-4', mlId: 'ml-4', volId: 'vol-4', costId: 'cost-4', note: 'in-glass finisher' }
+  ];
+  var liquidCost = 0, spiritCost = 0, totalServeMl = 0, servesArr = [];
+  var tbody = document.getElementById('recipe-body');
   tbody.innerHTML = '';
-
-  recipe.forEach((r, i) => {
-    const totalCost = v(r.costId);
-    const totalVol = v(r.volId);
-    const perMl = totalVol > 0 ? totalCost / totalVol : 0;
-    const serveCost = perMl * r.ml;
+  for (var i = 0; i < ingredients.length; i++) {
+    var r = ingredients[i];
+    var name = t(r.nameId) || ('Ingredient ' + (i + 1));
+    var ml = v(r.mlId);
+    var totalVol = v(r.volId);
+    var totalCost = v(r.costId);
+    var perMl = totalVol > 0 ? totalCost / totalVol : 0;
+    var serveCost = perMl * ml;
     liquidCost += serveCost;
+    totalServeMl += ml;
+    if (ml > 0) servesArr.push(Math.floor(totalVol / ml));
     if (i === 0) spiritCost = serveCost;
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>
-        <div class="ing-name">${r.name}</div>
-        ${r.note ? `<div class="ing-note">${r.note}</div>` : ''}
-      </td>
-      <td class="ml-val">${r.ml}</td>
-      <td class="per-ml">${(perMl * 100).toFixed(3)}¢</td>
-      <td class="cost-highlight">${fmt(serveCost)}</td>
-    `;
+    var tr = document.createElement('tr');
+    tr.innerHTML =
+      '<td><div class="ing-name">' + name + '</div>' +
+      (r.note ? '<div class="ing-note">' + r.note + '</div>' : '') + '</td>' +
+      '<td class="ml-val">' + ml + '</td>' +
+      '<td class="per-ml">' + (perMl * 100).toFixed(3) + '&#162;</td>' +
+      '<td class="cost-highlight">' + fmt(serveCost) + '</td>';
     tbody.appendChild(tr);
-  });
-
-  // Garnish row
-  const garnish = v('garnish-cost');
-  const trG = document.createElement('tr');
-  trG.className = 'garnish-row';
-  trG.innerHTML = `
-    <td>
-      <div class="ing-name">Garnish</div>
-      <div class="ing-note">Watermelon / strawberry / lemon</div>
-    </td>
-    <td class="ml-val">—</td>
-    <td class="per-ml">—</td>
-    <td class="cost-highlight">${fmt(garnish)}</td>
-  `;
+  }
+  var garnishName = t('name-garnish') || 'Garnish';
+  var garnish = v('cost-garnish');
+  var trG = document.createElement('tr');
+  trG.innerHTML =
+    '<td><div class="ing-name" style="color:var(--muted);font-style:italic">' + garnishName + '</div></td>' +
+    '<td class="ml-val">&#8212;</td><td class="per-ml">&#8212;</td>' +
+    '<td class="cost-highlight">' + fmt(garnish) + '</td>';
   tbody.appendChild(trG);
-
-  // Total row
-  const totalCogs = liquidCost + garnish;
-  const trT = document.createElement('tr');
+  var totalCogs = liquidCost + garnish;
+  var trT = document.createElement('tr');
   trT.style.borderTop = '1px solid #2a2a2e';
-  trT.innerHTML = `
-    <td style="color:#e8e6e1;font-weight:500;letter-spacing:0.05em;">TOTAL COGs / serve</td>
-    <td style="color:#6b6a67;">160ml</td>
-    <td></td>
-    <td style="color:#e8c56d;font-size:15px;font-weight:500;">${fmt(totalCogs)}</td>
-  `;
+  trT.innerHTML =
+    '<td style="color:#e8e6e1;font-weight:500;letter-spacing:0.05em;">TOTAL COGs / serve</td>' +
+    '<td style="color:#6b6a67;">' + totalServeMl + 'ml</td><td></td>' +
+    '<td style="color:#e8c56d;font-size:15px;font-weight:500;">' + fmt(totalCogs) + '</td>';
   tbody.appendChild(trT);
-
-  // Cards
   document.getElementById('c-liquid').textContent = fmt(liquidCost);
   document.getElementById('c-total').textContent = fmt(totalCogs);
   document.getElementById('c-spirit').textContent = fmt(spiritCost);
-
-  // Serves from limiting ingredient (Supasawa at 4500ml / 15ml per serve = 300)
-  const serves = [
-    Math.floor(v('pav-vol') / 30),
-    Math.floor(v('gif-vol') / 15),
-    Math.floor(v('sup-vol') / 15),
-    Math.floor(v('soda-vol') / 100),
-  ];
-  document.getElementById('c-serves').textContent = Math.min(...serves);
-
-  // Sell price scenarios
-  const sell = v('sell-price');
-  const be = totalCogs;
-  const p75 = totalCogs / 0.25;
-  const p80 = totalCogs / 0.20;
-  const p82 = totalCogs / 0.18;
-
-  document.getElementById('s-be').textContent = fmt(be);
-  document.getElementById('s-75').textContent = fmt(p75);
-  document.getElementById('s-80').textContent = fmt(p80);
-  document.getElementById('s-82').textContent = fmt(p82);
-
-  const gpPct = sell > 0 ? ((sell - totalCogs) / sell) * 100 : 0;
-  const cogsPct = sell > 0 ? (totalCogs / sell) * 100 : 0;
-
-  const gpEl = document.getElementById('s-gp');
-  gpEl.textContent = fmtPct(gpPct);
-  gpEl.className = 'sell-row-val ' + (gpPct >= 80 ? 'good' : gpPct >= 75 ? 'warn' : 'bad');
-
-  const cogsEl = document.getElementById('s-cogs');
-  cogsEl.textContent = fmtPct(cogsPct);
-  cogsEl.className = 'sell-row-val ' + (cogsPct <= 18 ? 'good' : cogsPct <= 25 ? 'warn' : 'bad');
-
-  // Meter
-  const meterPct = Math.min(cogsPct, 100);
-  const fill = document.getElementById('meter-fill');
-  fill.style.width = meterPct + '%';
-  fill.style.background = cogsColor(cogsPct);
-  const pctEl = document.getElementById('cogs-pct');
-  pctEl.textContent = fmtPct(cogsPct);
-  pctEl.style.color = cogsColor(cogsPct);
+  document.getElementById('c-spirit-label').textContent = t('name-1') || 'ingredient 1';
+  document.getElementById('c-serves').textContent = servesArr.length ? Math.min.apply(null, servesArr) : 0;
+  var sellIncGST = v('sell-price');
+  var gstAmt = sellIncGST * GST / (1 + GST);
+  var sellExGST = sellIncGST - gstAmt;
+  document.getElementById('g-sell-inc').textContent = fmt(sellIncGST);
+  document.getElementById('g-gst-amt').textContent = fmt(gstAmt);
+  document.getElementById('g-sell-ex').textContent = fmt(sellExGST);
+  var cogsPctNet = sellExGST > 0 ? (totalCogs / sellExGST) * 100 : 0;
+  var gpPctNet = sellExGST > 0 ? ((sellExGST - totalCogs) / sellExGST) * 100 : 0;
+  document.getElementById('g-cogs-net').textContent = fmtPct(cogsPctNet);
+  document.getElementById('g-cogs-net').className = 'gst-row-val purple';
+  var gpNetEl = document.getElementById('g-gp-net');
+  gpNetEl.textContent = fmtPct(gpPctNet);
+  gpNetEl.className = 'gst-row-val ' + (gpPctNet >= 80 ? 'green' : gpPctNet >= 75 ? 'warn' : 'bad');
+  var fill = document.getElementById('meter-fill');
+  fill.style.width = Math.min(cogsPctNet, 100) + '%';
+  fill.style.background = cogsColor(cogsPctNet);
+  var pctEl = document.getElementById('cogs-pct');
+  pctEl.textContent = fmtPct(cogsPctNet);
+  pctEl.style.color = cogsColor(cogsPctNet);
+  document.getElementById('s-be').textContent = fmt(totalCogs * (1 + GST));
+  document.getElementById('s-75').textContent = fmt((totalCogs / 0.25) * (1 + GST));
+  document.getElementById('s-80').textContent = fmt((totalCogs / 0.20) * (1 + GST));
+  document.getElementById('s-82').textContent = fmt((totalCogs / 0.18) * (1 + GST));
+  var gpEl = document.getElementById('s-gp');
+  gpEl.textContent = fmtPct(gpPctNet);
+  gpEl.className = 'sell-row-val ' + (gpPctNet >= 80 ? 'good' : gpPctNet >= 75 ? 'warn' : 'bad');
+  var cogsEl = document.getElementById('s-cogs');
+  cogsEl.textContent = fmtPct(cogsPctNet);
+  cogsEl.className = 'sell-row-val ' + (cogsPctNet <= 18 ? 'good' : cogsPctNet <= 25 ? 'warn' : 'bad');
 }
-
 calc();
 </script>
-
 </body>
 </html>
