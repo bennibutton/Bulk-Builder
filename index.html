@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Batch Cocktail Builder — COGs Analysis</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg: #0e0e0f;
@@ -42,17 +43,33 @@
     to { opacity: 1; transform: translateY(0); }
   }
   .header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 36px; }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .label-tag {
     font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
     color: var(--accent); margin-bottom: 10px; display: block;
   }
   h1 {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(32px, 6vw, 52px); font-weight: 900;
+    font-size: clamp(28px, 5vw, 52px); font-weight: 900;
     line-height: 1.05; letter-spacing: -0.02em; color: var(--text);
   }
   h1 span { color: var(--accent); }
   .subtitle { margin-top: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+
+  /* EXPORT BUTTON */
+  .export-btn {
+    display: flex; align-items: center; gap: 8px;
+    background: transparent; border: 1px solid var(--accent);
+    border-radius: 4px; padding: 10px 16px;
+    color: var(--accent); font-family: 'DM Mono', monospace;
+    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+    cursor: pointer; white-space: nowrap; margin-top: 6px;
+    transition: background 0.2s, color 0.2s;
+    flex-shrink: 0;
+  }
+  .export-btn:hover { background: var(--accent); color: var(--bg); }
+  .export-btn svg { width: 14px; height: 14px; }
+
   .section-title {
     font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
     color: var(--muted); margin-bottom: 20px;
@@ -190,11 +207,12 @@
   .sell-input-row input { width: 100px; border-color: var(--accent); }
   .footer {
     padding-top: 20px; border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between;
+    display: flex; justify-content: space-between; align-items: center;
     font-size: 10px; color: var(--muted); letter-spacing: 0.06em;
     animation: fadeUp 0.6s ease 0.5s both;
   }
   @media (max-width: 600px) {
+    .header-top { flex-direction: column; gap: 16px; }
     .input-row { grid-template-columns: 1fr 1fr; }
     .input-row.garnish-input { grid-template-columns: 1fr 1fr; }
     .sell-grid, .gst-grid { grid-template-columns: 1fr; }
@@ -206,15 +224,26 @@
 <div class="container">
 
   <div class="header">
-    <span class="label-tag">&#x2B21; Beverage Costing Tool</span>
-    <h1>BATCH <span>COCKTAIL BUILDER</span></h1>
-    <div class="subtitle">COGs analysis</div>
+    <div class="header-top">
+      <div>
+        <span class="label-tag">&#x2B21; Beverage Costing Tool</span>
+        <h1>BATCH <span>COCKTAIL BUILDER</span></h1>
+        <div class="subtitle">COGs analysis</div>
+      </div>
+      <button class="export-btn" onclick="exportXLSX()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export .xlsx
+      </button>
+    </div>
   </div>
 
   <div class="inputs-section">
     <div class="section-title">Stock pricing &#8212; edit all fields to recalculate</div>
     <div class="input-grid">
-
       <div class="input-row">
         <input type="text" id="name-1" value="Pavlova Spirit" placeholder="Ingredient name" oninput="calc()">
         <input type="number" id="ml-1" value="30" step="1" min="0" oninput="calc()">
@@ -224,7 +253,6 @@
         <input type="number" id="cost-1" value="663.00" step="0.01" oninput="calc()">
       </div>
       <div class="input-sub">&#8592; name &nbsp;&middot;&nbsp; serve ml &nbsp;&middot;&nbsp; bulk volume &nbsp;&middot;&nbsp; bulk cost $</div>
-
       <div class="input-row">
         <input type="text" id="name-2" value="Giffard Watermelon Syrup" placeholder="Ingredient name" oninput="calc()">
         <input type="number" id="ml-2" value="15" step="1" min="0" oninput="calc()">
@@ -233,7 +261,6 @@
         <span class="input-unit">ml stock</span>
         <input type="number" id="cost-2" value="142.35" step="0.01" oninput="calc()">
       </div>
-
       <div class="input-row">
         <input type="text" id="name-3" value="Supasawa Cocktail Mixer" placeholder="Ingredient name" oninput="calc()">
         <input type="number" id="ml-3" value="15" step="1" min="0" oninput="calc()">
@@ -242,7 +269,6 @@
         <span class="input-unit">ml stock</span>
         <input type="number" id="cost-3" value="150.01" step="0.01" oninput="calc()">
       </div>
-
       <div class="input-row">
         <input type="text" id="name-4" value="Soda Water" placeholder="Ingredient name" oninput="calc()">
         <input type="number" id="ml-4" value="100" step="1" min="0" oninput="calc()">
@@ -251,14 +277,12 @@
         <span class="input-unit">ml stock</span>
         <input type="number" id="cost-4" value="0.20" step="0.01" oninput="calc()">
       </div>
-
       <div class="input-row garnish-input">
         <input type="text" id="name-garnish" value="Garnish" placeholder="Garnish description" oninput="calc()">
         <span class="input-unit" style="font-size:10px;color:var(--muted);">flat per serve cost &#8594;</span>
         <span></span>
         <input type="number" id="cost-garnish" value="0.35" step="0.01" oninput="calc()">
       </div>
-
     </div>
   </div>
 
@@ -383,8 +407,11 @@
   </div>
 
 </div>
+
 <script>
 var GST = 0.10;
+var _lastCalc = {};
+
 function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
 function t(id) { return document.getElementById(id).value || ''; }
 function fmt(n, d) { d = d === undefined ? 2 : d; return '$' + n.toFixed(d); }
@@ -394,6 +421,7 @@ function cogsColor(pct) {
   if (pct <= 25) return '#e8c56d';
   return '#d4545c';
 }
+
 function calc() {
   var ingredients = [
     { nameId: 'name-1', mlId: 'ml-1', volId: 'vol-1', costId: 'cost-1', note: '' },
@@ -404,6 +432,8 @@ function calc() {
   var liquidCost = 0, spiritCost = 0, totalServeMl = 0, servesArr = [];
   var tbody = document.getElementById('recipe-body');
   tbody.innerHTML = '';
+  var ingRows = [];
+
   for (var i = 0; i < ingredients.length; i++) {
     var r = ingredients[i];
     var name = t(r.nameId) || ('Ingredient ' + (i + 1));
@@ -416,6 +446,8 @@ function calc() {
     totalServeMl += ml;
     if (ml > 0) servesArr.push(Math.floor(totalVol / ml));
     if (i === 0) spiritCost = serveCost;
+    ingRows.push({ name: name, ml: ml, perMl: perMl, serveCost: serveCost, bulkVol: totalVol, bulkCost: totalCost });
+
     var tr = document.createElement('tr');
     tr.innerHTML =
       '<td><div class="ing-name">' + name + '</div>' +
@@ -425,6 +457,7 @@ function calc() {
       '<td class="cost-highlight">' + fmt(serveCost) + '</td>';
     tbody.appendChild(tr);
   }
+
   var garnishName = t('name-garnish') || 'Garnish';
   var garnish = v('cost-garnish');
   var trG = document.createElement('tr');
@@ -433,6 +466,7 @@ function calc() {
     '<td class="ml-val">&#8212;</td><td class="per-ml">&#8212;</td>' +
     '<td class="cost-highlight">' + fmt(garnish) + '</td>';
   tbody.appendChild(trG);
+
   var totalCogs = liquidCost + garnish;
   var trT = document.createElement('tr');
   trT.style.borderTop = '1px solid #2a2a2e';
@@ -441,41 +475,167 @@ function calc() {
     '<td style="color:#6b6a67;">' + totalServeMl + 'ml</td><td></td>' +
     '<td style="color:#e8c56d;font-size:15px;font-weight:500;">' + fmt(totalCogs) + '</td>';
   tbody.appendChild(trT);
+
   document.getElementById('c-liquid').textContent = fmt(liquidCost);
   document.getElementById('c-total').textContent = fmt(totalCogs);
   document.getElementById('c-spirit').textContent = fmt(spiritCost);
   document.getElementById('c-spirit-label').textContent = t('name-1') || 'ingredient 1';
-  document.getElementById('c-serves').textContent = servesArr.length ? Math.min.apply(null, servesArr) : 0;
+  var minServes = servesArr.length ? Math.min.apply(null, servesArr) : 0;
+  document.getElementById('c-serves').textContent = minServes;
+
   var sellIncGST = v('sell-price');
   var gstAmt = sellIncGST * GST / (1 + GST);
   var sellExGST = sellIncGST - gstAmt;
+
   document.getElementById('g-sell-inc').textContent = fmt(sellIncGST);
   document.getElementById('g-gst-amt').textContent = fmt(gstAmt);
   document.getElementById('g-sell-ex').textContent = fmt(sellExGST);
+
   var cogsPctNet = sellExGST > 0 ? (totalCogs / sellExGST) * 100 : 0;
-  var gpPctNet = sellExGST > 0 ? ((sellExGST - totalCogs) / sellExGST) * 100 : 0;
+  var gpPctNet   = sellExGST > 0 ? ((sellExGST - totalCogs) / sellExGST) * 100 : 0;
+
   document.getElementById('g-cogs-net').textContent = fmtPct(cogsPctNet);
   document.getElementById('g-cogs-net').className = 'gst-row-val purple';
   var gpNetEl = document.getElementById('g-gp-net');
   gpNetEl.textContent = fmtPct(gpPctNet);
   gpNetEl.className = 'gst-row-val ' + (gpPctNet >= 80 ? 'green' : gpPctNet >= 75 ? 'warn' : 'bad');
+
   var fill = document.getElementById('meter-fill');
   fill.style.width = Math.min(cogsPctNet, 100) + '%';
   fill.style.background = cogsColor(cogsPctNet);
   var pctEl = document.getElementById('cogs-pct');
   pctEl.textContent = fmtPct(cogsPctNet);
   pctEl.style.color = cogsColor(cogsPctNet);
-  document.getElementById('s-be').textContent = fmt(totalCogs * (1 + GST));
-  document.getElementById('s-75').textContent = fmt((totalCogs / 0.25) * (1 + GST));
-  document.getElementById('s-80').textContent = fmt((totalCogs / 0.20) * (1 + GST));
-  document.getElementById('s-82').textContent = fmt((totalCogs / 0.18) * (1 + GST));
+
+  var p75 = (totalCogs / 0.25) * (1 + GST);
+  var p80 = (totalCogs / 0.20) * (1 + GST);
+  var p82 = (totalCogs / 0.18) * (1 + GST);
+  var be  = totalCogs * (1 + GST);
+
+  document.getElementById('s-be').textContent  = fmt(be);
+  document.getElementById('s-75').textContent  = fmt(p75);
+  document.getElementById('s-80').textContent  = fmt(p80);
+  document.getElementById('s-82').textContent  = fmt(p82);
+
   var gpEl = document.getElementById('s-gp');
   gpEl.textContent = fmtPct(gpPctNet);
   gpEl.className = 'sell-row-val ' + (gpPctNet >= 80 ? 'good' : gpPctNet >= 75 ? 'warn' : 'bad');
   var cogsEl = document.getElementById('s-cogs');
   cogsEl.textContent = fmtPct(cogsPctNet);
   cogsEl.className = 'sell-row-val ' + (cogsPctNet <= 18 ? 'good' : cogsPctNet <= 25 ? 'warn' : 'bad');
+
+  // Cache for export
+  _lastCalc = {
+    ingRows: ingRows,
+    garnishName: garnishName, garnish: garnish,
+    liquidCost: liquidCost, totalCogs: totalCogs, totalServeMl: totalServeMl,
+    spiritCost: spiritCost, minServes: minServes,
+    sellIncGST: sellIncGST, gstAmt: gstAmt, sellExGST: sellExGST,
+    cogsPctNet: cogsPctNet, gpPctNet: gpPctNet,
+    be: be, p75: p75, p80: p80, p82: p82
+  };
 }
+
+function exportXLSX() {
+  var c = _lastCalc;
+  if (!c.ingRows) { alert('Nothing to export yet.'); return; }
+
+  var wb = XLSX.utils.book_new();
+
+  // ── SHEET 1: Recipe Build ──
+  var recipeData = [
+    ['BATCH COCKTAIL BUILDER — COGs Analysis'],
+    ['Exported: ' + new Date().toLocaleDateString('en-AU')],
+    [],
+    ['RECIPE BUILD — PER SERVE'],
+    ['Ingredient', 'Serve (ml)', 'Bulk Vol (ml)', 'Bulk Cost ($)', 'Cost per ml (¢)', 'Serve Cost ($)']
+  ];
+
+  for (var i = 0; i < c.ingRows.length; i++) {
+    var r = c.ingRows[i];
+    recipeData.push([
+      r.name,
+      r.ml,
+      r.bulkVol,
+      r.bulkCost,
+      parseFloat((r.perMl * 100).toFixed(4)),
+      parseFloat(r.serveCost.toFixed(4))
+    ]);
+  }
+  recipeData.push([c.garnishName + ' (flat)', '—', '—', '—', '—', parseFloat(c.garnish.toFixed(4))]);
+  recipeData.push(['TOTAL', c.totalServeMl, '', '', '', parseFloat(c.totalCogs.toFixed(4))]);
+
+  recipeData.push([]);
+  recipeData.push(['SUMMARY']);
+  recipeData.push(['Liquid COGs / serve (ex-GST)', parseFloat(c.liquidCost.toFixed(4))]);
+  recipeData.push(['Total COGs / serve (incl. garnish, ex-GST)', parseFloat(c.totalCogs.toFixed(4))]);
+  recipeData.push(['Spirit / primary ingredient cost', parseFloat(c.spiritCost.toFixed(4))]);
+  recipeData.push(['Serves from current stock (limiting ingredient)', c.minServes]);
+
+  var ws1 = XLSX.utils.aoa_to_sheet(recipeData);
+  ws1['!cols'] = [{ wch: 34 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
+  XLSX.utils.book_append_sheet(wb, ws1, 'Recipe Build');
+
+  // ── SHEET 2: GST & Pricing ──
+  var pricingData = [
+    ['GST BREAKDOWN & SELL PRICE ANALYSIS'],
+    [],
+    ['SELL PRICE — GST BREAKDOWN', ''],
+    ['Menu price (inc. GST)', parseFloat(c.sellIncGST.toFixed(2))],
+    ['GST component (÷11)', parseFloat(c.gstAmt.toFixed(4))],
+    ['Net revenue (ex-GST)', parseFloat(c.sellExGST.toFixed(4))],
+    [],
+    ['MARGIN ANALYSIS (on ex-GST net revenue)', ''],
+    ['Total COGs', parseFloat(c.totalCogs.toFixed(4))],
+    ['COGs %', parseFloat((c.cogsPctNet / 100).toFixed(4))],
+    ['GP %', parseFloat((c.gpPctNet / 100).toFixed(4))],
+    ['GP $', parseFloat((c.sellExGST - c.totalCogs).toFixed(4))],
+    [],
+    ['SELL PRICE SCENARIOS (inc. GST menu price to hit GP target)', ''],
+    ['Breakeven (0% GP)', parseFloat(c.be.toFixed(2))],
+    ['75% GP target', parseFloat(c.p75.toFixed(2))],
+    ['80% GP target', parseFloat(c.p80.toFixed(2))],
+    ['82% GP target', parseFloat(c.p82.toFixed(2))],
+    [],
+    ['NOTE: All COGs and margin figures calculated on ex-GST net revenue.', ''],
+    ['GST extracted using the divide-by-11 method (AU standard).', '']
+  ];
+
+  var ws2 = XLSX.utils.aoa_to_sheet(pricingData);
+  // Format percentage rows
+  var pctRows = [9, 10]; // COGs % and GP % rows (0-indexed from array, +1 for sheet row)
+  ws2['!cols'] = [{ wch: 46 }, { wch: 16 }];
+
+  // Apply % format to COGs% and GP% cells
+  ['B10', 'B11'].forEach(function(cell) {
+    if (ws2[cell]) ws2[cell].z = '0.0%';
+  });
+  ['B4', 'B5', 'B6', 'B9', 'B12', 'B15', 'B16', 'B17', 'B18'].forEach(function(cell) {
+    if (ws2[cell]) ws2[cell].z = '$#,##0.00';
+  });
+
+  XLSX.utils.book_append_sheet(wb, ws2, 'GST & Pricing');
+
+  // ── SHEET 3: Stock Inputs ──
+  var stockData = [
+    ['STOCK INPUTS — as entered'],
+    [],
+    ['Ingredient', 'Serve (ml)', 'Bulk Vol (ml)', 'Bulk Cost ($)', 'Cost per ml (¢)']
+  ];
+  for (var j = 0; j < c.ingRows.length; j++) {
+    var s = c.ingRows[j];
+    stockData.push([s.name, s.ml, s.bulkVol, s.bulkCost, parseFloat((s.perMl * 100).toFixed(4))]);
+  }
+  stockData.push([c.garnishName + ' (garnish flat cost)', '—', '—', parseFloat(c.garnish.toFixed(4)), '—']);
+
+  var ws3 = XLSX.utils.aoa_to_sheet(stockData);
+  ws3['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }];
+  XLSX.utils.book_append_sheet(wb, ws3, 'Stock Inputs');
+
+  var filename = 'COGs_BatchCocktailBuilder_' + new Date().toISOString().slice(0,10) + '.xlsx';
+  XLSX.writeFile(wb, filename);
+}
+
 calc();
 </script>
 </body>
