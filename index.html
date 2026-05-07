@@ -3,640 +3,885 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Batch Cocktail Builder — COGs Analysis</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<title>Cocktail COGs Analyser — Quantum Innovation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0e0e0f;
-    --surface: #161618;
-    --border: #2a2a2e;
-    --accent: #e8c56d;
-    --text: #e8e6e1;
-    --muted: #6b6a67;
-    --green: #5ec97a;
-    --amber: #e8c56d;
-    --red: #d4545c;
-  }
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-  body {
-    background: var(--bg); color: var(--text);
-    font-family: 'DM Mono', monospace;
-    min-height: 100vh; padding: 40px 20px;
-    position: relative; overflow-x: hidden;
-  }
-  body::before {
-    content: ''; position: fixed;
-    top: -200px; right: -200px; width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(232,197,109,0.06) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  body::after {
-    content: ''; position: fixed;
-    bottom: -100px; left: -100px; width: 400px; height: 400px;
-    background: radial-gradient(circle, rgba(212,84,92,0.05) 0%, transparent 70%);
-    pointer-events: none;
-  }
-  .container { max-width: 820px; margin: 0 auto; animation: fadeUp 0.6s ease both; }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  .header { border-bottom: 1px solid var(--border); padding-bottom: 28px; margin-bottom: 36px; }
-  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
-  .label-tag {
-    font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--accent); margin-bottom: 10px; display: block;
-  }
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(28px, 5vw, 52px); font-weight: 900;
-    line-height: 1.05; letter-spacing: -0.02em; color: var(--text);
-  }
-  h1 span { color: var(--accent); }
-  .subtitle { margin-top: 10px; font-size: 11px; color: var(--muted); letter-spacing: 0.08em; }
+:root {
+  --bg:       #0D0D11;
+  --s1:       #141418;
+  --s2:       #1B1B22;
+  --s3:       #232329;
+  --border:   #2A2A34;
+  --border2:  #383844;
+  --text:     #C4C4D0;
+  --text2:    #6A6A7A;
+  --text3:    #404050;
+  --orange:   #C88820;
+  --orange-d: rgba(200,136,32,0.10);
+  --orange-dd:rgba(200,136,32,0.05);
+  --blue:     #3A50C8;
+  --good:     #2E7A5E;
+  --good-lt:  #3DAA82;
+  --warn:     #C88820;
+  --bad:      #A83C3C;
+  --bad-lt:   #C84E4E;
+  --r:        6px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:13px;line-height:1.5;}
 
-  /* EXPORT BUTTON */
-  .export-btn {
-    display: flex; align-items: center; gap: 8px;
-    background: transparent; border: 1px solid var(--accent);
-    border-radius: 4px; padding: 10px 16px;
-    color: var(--accent); font-family: 'DM Mono', monospace;
-    font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
-    cursor: pointer; white-space: nowrap; margin-top: 6px;
-    transition: background 0.2s, color 0.2s;
-    flex-shrink: 0;
-  }
-  .export-btn:hover { background: var(--accent); color: var(--bg); }
-  .export-btn svg { width: 14px; height: 14px; }
+/* HEADER */
+header{display:flex;align-items:center;gap:14px;padding:18px 28px;border-bottom:1px solid var(--border);background:var(--s1);}
+.logo-wrap{width:42px;height:42px;border-radius:50%;overflow:hidden;flex-shrink:0;border:1px solid var(--border2);}
+.logo-wrap img{width:100%;height:100%;display:block;}
+.header-text h1{font-size:15px;font-weight:600;letter-spacing:0.08em;color:#E0E0EA;text-transform:uppercase;}
+.header-text p{font-size:10px;color:var(--text2);letter-spacing:0.12em;text-transform:uppercase;margin-top:1px;}
+.header-right{margin-left:auto;}
+.qi-tag{font-size:9px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);background:var(--s2);border:1px solid var(--border);padding:4px 10px;border-radius:100px;}
 
-  .section-title {
-    font-size: 9px; letter-spacing: 0.25em; text-transform: uppercase;
-    color: var(--muted); margin-bottom: 20px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .inputs-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 28px; margin-bottom: 28px;
-    animation: fadeUp 0.6s ease 0.1s both;
-  }
-  .input-grid { display: grid; gap: 14px; }
-  .input-row {
-    display: grid;
-    grid-template-columns: 1fr 80px auto 90px auto 90px;
-    gap: 8px; align-items: center;
-  }
-  .input-row.garnish-input { grid-template-columns: 1fr 1fr auto 90px; }
-  input[type="text"] {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
-    color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
-    padding: 8px 10px; width: 100%; transition: border-color 0.2s; outline: none;
-  }
-  input[type="text"]:focus { border-color: var(--accent); }
-  input[type="text"]::placeholder { color: var(--muted); }
-  input[type="number"] {
-    background: var(--bg); border: 1px solid var(--border); border-radius: 4px;
-    color: var(--accent); font-family: 'DM Mono', monospace; font-size: 13px;
-    padding: 8px 10px; width: 100%; text-align: right;
-    transition: border-color 0.2s; outline: none;
-  }
-  input[type="number"]:focus { border-color: var(--accent); }
-  .input-unit { font-size: 10px; color: var(--muted); white-space: nowrap; }
-  .input-sub {
-    font-size: 9px; color: var(--muted); letter-spacing: 0.05em;
-    grid-column: 1 / -1; margin-top: -8px; padding-left: 2px;
-  }
-  .recipe-section { animation: fadeUp 0.6s ease 0.2s both; margin-bottom: 28px; }
-  .recipe-table {
-    width: 100%; border-collapse: collapse;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; overflow: hidden;
-  }
-  .recipe-table thead tr { background: #111113; border-bottom: 1px solid var(--border); }
-  .recipe-table th {
-    font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase;
-    color: var(--muted); padding: 12px 16px; text-align: left; font-weight: 400;
-  }
-  .recipe-table th:not(:first-child) { text-align: right; }
-  .recipe-table td {
-    padding: 14px 16px; font-size: 13px;
-    border-bottom: 1px solid var(--border); vertical-align: top;
-  }
-  .recipe-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
-  .recipe-table tr:last-child td { border-bottom: none; }
-  .recipe-table tr:hover td { background: rgba(255,255,255,0.015); }
-  .ing-name { font-size: 13px; color: var(--text); }
-  .ing-note { font-size: 10px; color: var(--muted); font-style: italic; margin-top: 3px; }
-  .ml-val { color: var(--muted); }
-  .per-ml { color: var(--muted); font-size: 11px; }
-  .cost-highlight { color: var(--accent); font-weight: 500; }
-  .summary-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 14px; margin-bottom: 28px; animation: fadeUp 0.6s ease 0.3s both;
-  }
-  .card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 20px; position: relative; overflow: hidden;
-  }
-  .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; }
-  .card.accent::before { background: var(--accent); }
-  .card.green::before { background: var(--green); }
-  .card.red::before { background: var(--red); }
-  .card.blue::before { background: #7b9ccd; }
-  .card-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
-  .card-value { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; line-height: 1; }
-  .card.accent .card-value { color: var(--accent); }
-  .card.green .card-value { color: var(--green); }
-  .card.red .card-value { color: var(--red); }
-  .card.blue .card-value { color: #7b9ccd; }
-  .card-sub { font-size: 10px; color: var(--muted); margin-top: 6px; }
-  .gst-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 24px 28px; margin-bottom: 28px;
-    animation: fadeUp 0.6s ease 0.32s both;
-  }
-  .gst-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-  .gst-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 4px; font-size: 12px;
-  }
-  .gst-row.span2 { grid-column: 1 / -1; }
-  .gst-row-label { color: var(--muted); }
-  .gst-row-val { color: var(--text); font-variant-numeric: tabular-nums; }
-  .gst-row-val.accent { color: var(--accent); }
-  .gst-row-val.green { color: var(--green); }
-  .gst-row-val.purple { color: #a78bfa; }
-  .gst-row-val.warn { color: var(--amber); }
-  .gst-row-val.bad { color: var(--red); }
-  .meter-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 24px 28px; margin-bottom: 28px;
-    animation: fadeUp 0.6s ease 0.35s both;
-  }
-  .meter-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
-  .meter-title { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
-  .meter-pct { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; }
-  .meter-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
-  .meter-fill { height: 100%; border-radius: 3px; transition: width 0.8s cubic-bezier(0.25,1,0.5,1); }
-  .meter-legend { display: flex; gap: 16px; font-size: 10px; color: var(--muted); }
-  .legend-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-  .sell-section {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 6px; padding: 24px 28px;
-    animation: fadeUp 0.6s ease 0.4s both; margin-bottom: 28px;
-  }
-  .sell-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
-  .sell-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 14px; background: var(--bg);
-    border: 1px solid var(--border); border-radius: 4px; font-size: 12px;
-  }
-  .sell-row-label { color: var(--muted); }
-  .sell-row-val { color: var(--text); font-variant-numeric: tabular-nums; }
-  .sell-row-val.good { color: var(--green); }
-  .sell-row-val.warn { color: var(--amber); }
-  .sell-row-val.bad { color: var(--red); }
-  .sell-input-row {
-    grid-column: 1 / -1; display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; background: var(--bg);
-    border: 1px solid var(--accent); border-radius: 4px;
-  }
-  .sell-input-row label { font-size: 11px; color: var(--accent); flex: 1; letter-spacing: 0.05em; }
-  .sell-input-row input { width: 100px; border-color: var(--accent); }
-  .footer {
-    padding-top: 20px; border-top: 1px solid var(--border);
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: 10px; color: var(--muted); letter-spacing: 0.06em;
-    animation: fadeUp 0.6s ease 0.5s both;
-  }
-  @media (max-width: 600px) {
-    .header-top { flex-direction: column; gap: 16px; }
-    .input-row { grid-template-columns: 1fr 1fr; }
-    .input-row.garnish-input { grid-template-columns: 1fr 1fr; }
-    .sell-grid, .gst-grid { grid-template-columns: 1fr; }
-    .gst-row.span2 { grid-column: 1; }
-  }
+/* SELECTOR */
+.selector-bar{padding:14px 28px;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.selector-bar label{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+.selector-bar select{background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:'Sora',sans-serif;font-size:13px;padding:8px 14px;border-radius:var(--r);outline:none;cursor:pointer;min-width:230px;transition:border-color .15s;}
+.selector-bar select:focus{border-color:var(--orange);}
+.preset-hint{font-size:11px;color:var(--text2);font-style:italic;}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:1fr 340px;gap:0;max-width:1180px;margin:0 auto;padding:24px 28px;align-items:start;}
+@media(max-width:820px){.main{grid-template-columns:1fr;}header,.selector-bar{padding:14px 16px;}.main{padding:16px;}}
+
+/* PANEL */
+.panel{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:16px;}
+.panel-hdr{padding:10px 16px;border-bottom:1px solid var(--border);background:var(--s2);font-size:9.5px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);display:flex;align-items:center;gap:8px;}
+.panel-hdr .dot{width:5px;height:5px;border-radius:50%;background:var(--orange);flex-shrink:0;}
+.panel-body{padding:16px;}
+
+/* INGREDIENT TABLE */
+.ing-table{width:100%;border-collapse:collapse;}
+.ing-table thead th{font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:0 4px 8px 0;text-align:left;border-bottom:1px solid var(--border);font-weight:500;}
+.ing-table thead th.r{text-align:right;}
+.ing-table tbody tr{border-bottom:1px solid var(--border);}
+.ing-table tbody tr:last-child{border-bottom:none;}
+.ing-table td{padding:6px 4px 6px 0;vertical-align:middle;}
+.ing-table td.r{text-align:right;}
+.ing-input{background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'DM Mono',monospace;font-size:12px;padding:5px 8px;border-radius:4px;outline:none;width:100%;transition:border-color .15s,background .15s;}
+.ing-input:focus{border-color:var(--orange);background:var(--s3);}
+.ing-input.name-input{font-family:'Sora',sans-serif;font-size:12px;min-width:130px;}
+.ing-input.num-input{width:70px;text-align:right;}
+.calc-cell{font-family:'DM Mono',monospace;font-size:11px;color:var(--text2);padding-right:4px;white-space:nowrap;}
+.calc-cell.hi{color:var(--orange);font-weight:500;}
+
+/* TOTAL SERVE ROW */
+.total-serve-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0 2px;border-top:1px solid var(--border);margin-top:8px;}
+.total-serve-row .tsr-label{font-size:9.5px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text2);}
+.total-serve-row .tsr-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:500;color:var(--text);}
+
+/* GARNISH */
+.garnish-row{display:flex;align-items:center;gap:10px;padding:8px 0 2px;}
+.garnish-row label{font-size:10px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+
+/* RECIPE TABLE */
+.recipe-table{width:100%;border-collapse:collapse;}
+.recipe-table thead th{font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text3);padding:0 8px 6px 0;text-align:left;border-bottom:1px solid var(--border);font-weight:500;}
+.recipe-table thead th:last-child{text-align:right;}
+.recipe-table td{padding:7px 8px 7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.recipe-table tr:last-child td{border-bottom:none;}
+.recipe-table td:last-child{text-align:right;font-family:'DM Mono',monospace;color:var(--orange);}
+.recipe-table td:nth-child(2){font-family:'DM Mono',monospace;color:var(--text2);}
+.recipe-table td:nth-child(3){font-family:'DM Mono',monospace;color:var(--text2);}
+
+/* RIGHT COL */
+.right-col{padding-left:20px;}
+@media(max-width:820px){.right-col{padding-left:0;}}
+
+/* SELL PRICE */
+.sell-price-wrap{display:flex;align-items:center;gap:0;margin-bottom:18px;}
+.sell-price-prefix{background:var(--s3);border:1px solid var(--border2);border-right:none;padding:8px 12px;border-radius:var(--r) 0 0 var(--r);font-family:'DM Mono',monospace;font-size:14px;color:var(--text2);}
+#sellPrice{flex:1;background:var(--s2);border:1px solid var(--border2);color:var(--text);font-family:'DM Mono',monospace;font-size:18px;font-weight:500;padding:8px 12px;border-radius:0 var(--r) var(--r) 0;outline:none;transition:border-color .15s;}
+#sellPrice:focus{border-color:var(--orange);}
+
+/* GP BAR (replaces circular gauge) */
+.gp-bar-section{margin-bottom:18px;}
+.gp-display{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:10px;}
+.gp-display-left{display:flex;align-items:baseline;gap:6px;}
+.gp-big-pct{font-family:'DM Mono',monospace;font-size:40px;font-weight:700;line-height:1;transition:color .3s;}
+.gp-label-text{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--text2);padding-bottom:4px;}
+.gp-display-right{text-align:right;}
+.gp-display-amt{font-family:'DM Mono',monospace;font-size:16px;font-weight:500;color:var(--text);transition:color .3s;}
+.gp-display-sub{font-size:9px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text2);}
+.gp-bar-track{height:10px;background:var(--s3);border-radius:100px;overflow:hidden;margin-bottom:5px;}
+.gp-bar-fill{height:100%;border-radius:100px;transition:width .5s cubic-bezier(.4,0,.2,1),background .3s;}
+.gp-zone-labels{display:flex;justify-content:space-between;font-size:8.5px;color:var(--text3);}
+
+/* COGS BAR */
+.cogs-bar-wrap{margin:4px 0 16px;}
+.cogs-bar-labels{display:flex;justify-content:space-between;font-size:9.5px;color:var(--text2);margin-bottom:5px;}
+.cogs-bar-track{height:6px;background:var(--s3);border-radius:100px;overflow:hidden;}
+.cogs-bar-fill{height:100%;border-radius:100px;background:var(--orange);transition:width .5s cubic-bezier(.4,0,.2,1),background .3s;}
+.cogs-zone-labels{display:flex;font-size:8px;color:var(--text3);margin-top:4px;justify-content:space-between;}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.stat-cell{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;}
+.stat-label{font-size:8.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);margin-bottom:4px;}
+.stat-val{font-family:'DM Mono',monospace;font-size:15px;font-weight:500;color:var(--text);}
+.stat-val.orange{color:var(--orange);}
+.stat-val.good{color:var(--good-lt);}
+
+/* SCENARIOS */
+.scenarios{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+@media(max-width:600px){.scenarios{grid-template-columns:repeat(3,1fr);}}
+.scenario-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:10px 8px;text-align:center;transition:border-color .2s;}
+.scenario-card.current{border-color:var(--orange);background:var(--orange-dd);}
+.scenario-pct{font-size:9px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);margin-bottom:5px;}
+.scenario-price{font-family:'DM Mono',monospace;font-size:16px;font-weight:600;color:var(--text);}
+.scenario-price.current{color:var(--orange);}
+.scenario-gp-note{font-size:9px;color:var(--text3);margin-top:2px;font-family:'DM Mono',monospace;}
+
+/* GP SLIDER SECTION */
+.gp-slider-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+.gp-slider-header{font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px;}
+.gp-slider-header .dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0;}
+.slider-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.slider-row label{font-size:9px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text2);white-space:nowrap;width:80px;}
+input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:4px;background:var(--s3);border-radius:100px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:var(--blue);cursor:pointer;border:2px solid var(--bg);transition:transform .15s;}
+input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.2);}
+input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:var(--blue);cursor:pointer;border:2px solid var(--bg);}
+.slider-val-badge{font-family:'DM Mono',monospace;font-size:13px;font-weight:500;color:var(--blue);background:var(--blue-d,rgba(58,80,200,0.10));border:1px solid rgba(58,80,200,0.25);padding:3px 10px;border-radius:100px;white-space:nowrap;}
+.slider-output{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-top:8px;}
+.slider-output-main{display:flex;align-items:baseline;gap:8px;margin-bottom:6px;}
+.slider-price-big{font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--blue);}
+.slider-price-label{font-size:9.5px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text2);}
+.slider-output-sub{display:flex;gap:16px;flex-wrap:wrap;}
+.slider-sub-item{font-size:11px;color:var(--text2);}
+.slider-sub-item span{font-family:'DM Mono',monospace;color:var(--text);}
+.slider-note{font-size:9px;color:var(--text3);margin-top:8px;font-style:italic;}
+
+/* BREAKDOWN */
+.breakdown-list{list-style:none;}
+.breakdown-list li{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.breakdown-list li:last-child{border-bottom:none;}
+.breakdown-list .bl-label{color:var(--text2);}
+.breakdown-list .bl-val{font-family:'DM Mono',monospace;font-weight:500;}
+.breakdown-list .bl-val.accent{color:var(--orange);}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:14px 28px;background:var(--s1);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:8px;}
+footer .foot-left{font-size:9.5px;letter-spacing:0.10em;text-transform:uppercase;color:var(--text3);}
+footer .foot-right{font-size:9px;color:var(--text3);}
+/* ACTION BAR */
+.action-bar{padding:10px 28px;border-bottom:1px solid var(--border);background:var(--s1);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+@media(max-width:820px){.action-bar{padding:10px 16px;}}
+.action-group{display:flex;align-items:center;gap:8px;}
+.action-divider{width:1px;height:24px;background:var(--border2);flex-shrink:0;}
+.build-name-input{background:var(--s2);border:1px solid var(--border);color:var(--text);font-family:'Sora',sans-serif;font-size:12px;padding:6px 10px;border-radius:var(--r);outline:none;width:190px;transition:border-color .15s;}
+.build-name-input:focus{border-color:var(--orange);}
+.build-name-input::placeholder{color:var(--text3);}
+.btn{font-family:'Sora',sans-serif;font-size:11px;letter-spacing:0.08em;font-weight:500;padding:6px 12px;border-radius:var(--r);border:1px solid;cursor:pointer;transition:all .15s;white-space:nowrap;}
+.btn-save{background:var(--orange-d);border-color:rgba(200,136,32,0.35);color:var(--orange);}
+.btn-save:hover{background:rgba(200,136,32,0.18);border-color:var(--orange);}
+.btn-delete{background:transparent;border-color:var(--border);color:var(--text2);}
+.btn-delete:hover{border-color:var(--bad);color:var(--bad-lt);}
+.btn-export{background:var(--s2);border-color:var(--border2);color:var(--text2);}
+.btn-export:hover{border-color:var(--blue);color:#6880E8;}
+.action-label{font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);white-space:nowrap;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--s3);border:1px solid var(--border2);color:var(--text);padding:10px 18px;border-radius:var(--r);font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-<div class="container">
 
-  <div class="header">
-    <div class="header-top">
-      <div>
-        <span class="label-tag">&#x2B21; Beverage Costing Tool</span>
-        <h1>BATCH <span>COCKTAIL BUILDER</span></h1>
-        <div class="subtitle">COGs analysis</div>
+<header>
+  <div class="logo-wrap">
+    <img src="data:image/png;base64,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" alt="QI">
+  </div>
+  <div class="header-text">
+    <h1>Cocktail COGs Analyser</h1>
+    <p>Beverage Cost &amp; GP Calculator</p>
+  </div>
+  <div class="header-right"><span class="qi-tag">Quantum Innovation</span></div>
+</header>
+
+<div class="selector-bar">
+  <label>Load Preset</label>
+  <select id="presetSelect" onchange="loadPreset(this.value)">
+    <option value="">— Custom / Empty —</option>
+    <option value="pash-pash">Pash Pash</option>
+    <option value="pavlova-sugar-sour">The Pavlova Sugar Sour</option>
+  </select>
+  <span class="preset-hint">Select a cocktail to pre-fill, or build your own below.</span>
+  <button class="btn btn-delete" id="btnDelete" style="display:none" onclick="deleteBuild()">✕ Delete saved</button>
+</div>
+
+<!-- ACTION BAR -->
+<div class="action-bar">
+  <span class="action-label">Save build</span>
+  <div class="action-group">
+    <input type="text" class="build-name-input" id="buildName" placeholder="Name this build…" maxlength="40">
+    <button class="btn btn-save" onclick="saveBuild()">Save</button>
+  </div>
+  <div class="action-divider"></div>
+  <span class="action-label">Export</span>
+  <div class="action-group">
+    <button class="btn btn-export" onclick="exportXLSX()">↓ XLSX</button>
+    <button class="btn btn-export" onclick="exportPDF()">↓ PDF</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+
+<div class="main">
+
+  <!-- LEFT -->
+  <div class="left-col">
+
+    <div class="panel">
+      <div class="panel-hdr"><span class="dot"></span>Build Pricing — edit all fields to recalculate</div>
+      <div class="panel-body">
+        <table class="ing-table">
+          <thead>
+            <tr>
+              <th>Ingredient</th>
+              <th>Serve&nbsp;ml</th>
+              <th>Stock&nbsp;ml</th>
+              <th>Cost&nbsp;$</th>
+              <th class="r">¢/ml</th>
+              <th class="r">Serve cost</th>
+            </tr>
+          </thead>
+          <tbody id="ingBody"></tbody>
+        </table>
+        <div class="total-serve-row">
+          <span class="tsr-label">Total Serve Volume</span>
+          <span class="tsr-val" id="totalServeMl">— ml</span>
+        </div>
+        <div class="garnish-row">
+          <label>Garnish / flat cost per serve</label>
+          <input type="number" id="garnishCost" class="ing-input num-input"
+                 min="0" step="0.01" value="0.00" oninput="recalculate()" placeholder="0.00">
+        </div>
       </div>
-      <button class="export-btn" onclick="exportXLSX()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        Export .xlsx
-      </button>
     </div>
+
+    <div class="panel">
+      <div class="panel-hdr"><span class="dot"></span>Build COGs — per serve</div>
+      <div class="panel-body">
+        <table class="recipe-table">
+          <thead>
+            <tr><th>Ingredient</th><th>ml</th><th>¢/ml</th><th>Serve cost</th></tr>
+          </thead>
+          <tbody id="recipeBody"></tbody>
+        </table>
+        <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div class="stat-cell">
+            <div class="stat-label">Liquid COGs/serve</div>
+            <div class="stat-val" id="liquidCogs">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">excl. garnish · ex-GST</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Total COGs/serve</div>
+            <div class="stat-val orange" id="totalCogs">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">incl. garnish · ex-GST</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </div>
 
-  <div class="inputs-section">
-    <div class="section-title">Stock pricing &#8212; edit all fields to recalculate</div>
-    <div class="input-grid">
-      <div class="input-row">
-        <input type="text" id="name-1" value="Pavlova Spirit" placeholder="Ingredient name" oninput="calc()">
-        <input type="number" id="ml-1" value="30" step="1" min="0" oninput="calc()">
-        <span class="input-unit">ml serve</span>
-        <input type="number" id="vol-1" value="10000" step="100" oninput="calc()">
-        <span class="input-unit">ml stock</span>
-        <input type="number" id="cost-1" value="663.00" step="0.01" oninput="calc()">
-      </div>
-      <div class="input-sub">&#8592; name &nbsp;&middot;&nbsp; serve ml &nbsp;&middot;&nbsp; bulk volume &nbsp;&middot;&nbsp; bulk cost $</div>
-      <div class="input-row">
-        <input type="text" id="name-2" value="Giffard Watermelon Syrup" placeholder="Ingredient name" oninput="calc()">
-        <input type="number" id="ml-2" value="15" step="1" min="0" oninput="calc()">
-        <span class="input-unit">ml serve</span>
-        <input type="number" id="vol-2" value="6000" step="100" oninput="calc()">
-        <span class="input-unit">ml stock</span>
-        <input type="number" id="cost-2" value="142.35" step="0.01" oninput="calc()">
-      </div>
-      <div class="input-row">
-        <input type="text" id="name-3" value="Supasawa Cocktail Mixer" placeholder="Ingredient name" oninput="calc()">
-        <input type="number" id="ml-3" value="15" step="1" min="0" oninput="calc()">
-        <span class="input-unit">ml serve</span>
-        <input type="number" id="vol-3" value="4500" step="100" oninput="calc()">
-        <span class="input-unit">ml stock</span>
-        <input type="number" id="cost-3" value="150.01" step="0.01" oninput="calc()">
-      </div>
-      <div class="input-row">
-        <input type="text" id="name-4" value="Soda Water" placeholder="Ingredient name" oninput="calc()">
-        <input type="number" id="ml-4" value="100" step="1" min="0" oninput="calc()">
-        <span class="input-unit">ml serve</span>
-        <input type="number" id="vol-4" value="1000" step="100" oninput="calc()">
-        <span class="input-unit">ml stock</span>
-        <input type="number" id="cost-4" value="0.20" step="0.01" oninput="calc()">
-      </div>
-      <div class="input-row garnish-input">
-        <input type="text" id="name-garnish" value="Garnish" placeholder="Garnish description" oninput="calc()">
-        <span class="input-unit" style="font-size:10px;color:var(--muted);">flat per serve cost &#8594;</span>
-        <span></span>
-        <input type="number" id="cost-garnish" value="0.35" step="0.01" oninput="calc()">
-      </div>
-    </div>
-  </div>
+  <!-- RIGHT -->
+  <div class="right-col">
 
-  <div class="recipe-section">
-    <div class="section-title">Recipe build &#8212; per serve</div>
-    <table class="recipe-table">
-      <thead>
-        <tr>
-          <th>Ingredient</th>
-          <th>ml</th>
-          <th>&#162;/ml</th>
-          <th>Serve cost</th>
-        </tr>
-      </thead>
-      <tbody id="recipe-body"></tbody>
-    </table>
-  </div>
+    <div class="panel">
+      <div class="panel-hdr"><span class="dot"></span>Sell Price &amp; GP Analysis</div>
+      <div class="panel-body">
 
-  <div class="summary-grid">
-    <div class="card accent">
-      <div class="card-label">Liquid COGs / serve</div>
-      <div class="card-value" id="c-liquid">&#8212;</div>
-      <div class="card-sub">excl. garnish &middot; ex-GST</div>
-    </div>
-    <div class="card green">
-      <div class="card-label">Total COGs / serve</div>
-      <div class="card-value" id="c-total">&#8212;</div>
-      <div class="card-sub">incl. garnish &middot; ex-GST</div>
-    </div>
-    <div class="card red">
-      <div class="card-label">Serves per stock</div>
-      <div class="card-value" id="c-serves">&#8212;</div>
-      <div class="card-sub">limiting ingredient</div>
-    </div>
-    <div class="card blue">
-      <div class="card-label">Spirit cost only</div>
-      <div class="card-value" id="c-spirit">&#8212;</div>
-      <div class="card-sub" id="c-spirit-label">ingredient 1</div>
-    </div>
-  </div>
+        <div style="margin-bottom:6px;">
+          <div style="font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);margin-bottom:8px;">Sell Price (inc. GST)</div>
+          <div class="sell-price-wrap">
+            <span class="sell-price-prefix">$</span>
+            <input type="number" id="sellPrice" value="18.00" min="0" step="0.50" oninput="recalculate()">
+          </div>
+        </div>
 
-  <div class="gst-section">
-    <div class="section-title">GST breakdown on sell price</div>
-    <div class="gst-grid">
-      <div class="gst-row">
-        <span class="gst-row-label">Sell price (inc. GST)</span>
-        <span class="gst-row-val accent" id="g-sell-inc">&#8212;</span>
-      </div>
-      <div class="gst-row">
-        <span class="gst-row-label">GST component (10%)</span>
-        <span class="gst-row-val" id="g-gst-amt">&#8212;</span>
-      </div>
-      <div class="gst-row">
-        <span class="gst-row-label">Net revenue (ex-GST)</span>
-        <span class="gst-row-val green" id="g-sell-ex">&#8212;</span>
-      </div>
-      <div class="gst-row">
-        <span class="gst-row-label">COGs % on net revenue</span>
-        <span class="gst-row-val purple" id="g-cogs-net">&#8212;</span>
-      </div>
-      <div class="gst-row span2">
-        <span class="gst-row-label">GP % on net ex-GST revenue</span>
-        <span class="gst-row-val green" id="g-gp-net">&#8212;</span>
-      </div>
-    </div>
-  </div>
+        <!-- GP BAR -->
+        <div class="gp-bar-section">
+          <div class="gp-display">
+            <div class="gp-display-left">
+              <span class="gp-big-pct" id="gaugePct">—</span>
+              <span class="gp-label-text">GP</span>
+            </div>
+            <div class="gp-display-right">
+              <div class="gp-display-amt" id="gaugeGpVal">—</div>
+              <div class="gp-display-sub">per serve · ex-GST</div>
+            </div>
+          </div>
+          <div class="gp-bar-track">
+            <div class="gp-bar-fill" id="gpBarFill" style="width:0%"></div>
+          </div>
+          <div class="gp-zone-labels">
+            <span>0%</span><span style="color:var(--text2)">Good 75%+</span><span>100%</span>
+          </div>
+        </div>
 
-  <div class="meter-section">
-    <div class="section-title">COGs % &#8212; calculated on ex-GST net revenue</div>
-    <div class="meter-header">
-      <span class="meter-title">Cost of goods sold</span>
-      <span class="meter-pct" id="cogs-pct">&#8212;</span>
-    </div>
-    <div class="meter-track">
-      <div class="meter-fill" id="meter-fill" style="width:0%"></div>
-    </div>
-    <div class="meter-legend">
-      <span><span class="legend-dot" style="background:#5ec97a"></span>Ideal &le;18%</span>
-      <span><span class="legend-dot" style="background:#e8c56d"></span>OK 18&#8211;25%</span>
-      <span><span class="legend-dot" style="background:#d4545c"></span>High 25%+</span>
-    </div>
-  </div>
+        <!-- COGS BAR -->
+        <div class="cogs-bar-wrap">
+          <div class="cogs-bar-labels">
+            <span>COGs %</span>
+            <span id="cogsBarPct">—</span>
+          </div>
+          <div class="cogs-bar-track">
+            <div class="cogs-bar-fill" id="cogsBarFill" style="width:0%"></div>
+          </div>
+          <div class="cogs-zone-labels">
+            <span>Ideal ≤18%</span><span>OK 18–25%</span><span>High 25%+</span>
+          </div>
+        </div>
 
-  <div class="sell-section">
-    <div class="section-title">Sell price scenarios &#8212; inc. GST menu price targets</div>
-    <div class="sell-grid">
-      <div class="sell-row">
-        <span class="sell-row-label">Breakeven (0% GP)</span>
-        <span class="sell-row-val" id="s-be">&#8212;</span>
-      </div>
-      <div class="sell-row">
-        <span class="sell-row-label">75% GP target</span>
-        <span class="sell-row-val good" id="s-75">&#8212;</span>
-      </div>
-      <div class="sell-row">
-        <span class="sell-row-label">80% GP target</span>
-        <span class="sell-row-val good" id="s-80">&#8212;</span>
-      </div>
-      <div class="sell-row">
-        <span class="sell-row-label">82% GP target</span>
-        <span class="sell-row-val good" id="s-82">&#8212;</span>
-      </div>
-      <div class="sell-input-row">
-        <label>Your menu price inc. GST (AUD) &#8594;</label>
-        <input type="number" id="sell-price" value="22.00" step="0.50" oninput="calc()">
-        <span class="input-unit">$</span>
-      </div>
-      <div class="sell-row">
-        <span class="sell-row-label">GP % (ex-GST basis)</span>
-        <span class="sell-row-val" id="s-gp">&#8212;</span>
-      </div>
-      <div class="sell-row">
-        <span class="sell-row-label">COGs % (ex-GST basis)</span>
-        <span class="sell-row-val" id="s-cogs">&#8212;</span>
+        <!-- STAT GRID -->
+        <div class="stat-grid">
+          <div class="stat-cell">
+            <div class="stat-label">Net Revenue</div>
+            <div class="stat-val" id="netRevenue">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">ex-GST</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">GST Component</div>
+            <div class="stat-val" id="gstAmount">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">10%</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">GP / Serve</div>
+            <div class="stat-val good" id="gpPerServe">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">ex-GST basis</div>
+          </div>
+          <div class="stat-cell">
+            <div class="stat-label">Spirit Cost Only</div>
+            <div class="stat-val" id="spiritCostOnly">—</div>
+            <div style="font-size:9px;color:var(--text3);margin-top:2px;">ingredient 1</div>
+          </div>
+        </div>
+
       </div>
     </div>
-  </div>
 
-  <div class="footer">
-    <span>BATCH COCKTAIL BUILDER &middot; COGs Analysis</span>
-    <span>All figures AUD &middot; Menu price inc. GST &middot; COGs ex-GST</span>
+    <!-- SCENARIOS + SLIDER -->
+    <div class="panel">
+      <div class="panel-hdr"><span class="dot"></span>Sell Price Scenarios — inc. GST menu price</div>
+      <div class="panel-body">
+        <div class="scenarios" id="scenarios"></div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:9.5px;letter-spacing:0.12em;text-transform:uppercase;color:var(--text2);margin-bottom:6px;">Your menu price breakdown</div>
+          <ul class="breakdown-list" id="breakdownList"></ul>
+        </div>
+
+        <!-- GP SLIDER -->
+        <div class="gp-slider-section">
+          <div class="gp-slider-header"><span class="dot"></span>GP Target Calculator — independent of sell price above</div>
+          <div class="slider-row">
+            <label>Target GP</label>
+            <input type="range" id="gpSlider" min="50" max="92" step="0.5" value="75" oninput="updateGpSlider()">
+            <span class="slider-val-badge" id="sliderBadge">75.0%</span>
+          </div>
+          <div class="slider-output">
+            <div class="slider-output-main">
+              <span class="slider-price-big" id="sliderSellPrice">—</span>
+              <span class="slider-price-label">inc. GST</span>
+            </div>
+            <div class="slider-output-sub">
+              <span class="slider-sub-item">Net rev: <span id="sliderNetRev">—</span></span>
+              <span class="slider-sub-item">GP/serve: <span id="sliderGpAmt">—</span></span>
+              <span class="slider-sub-item">COGs%: <span id="sliderCogsPct">—</span></span>
+            </div>
+            <div class="slider-note">Uses COGs from ingredient calculations above. Does not affect your sell price input.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
   </div>
 
 </div>
 
+<footer>
+  <div class="foot-left">Cocktail COGs Analyser · All figures AUD · Menu price inc. GST · COGs ex-GST</div>
+  <div class="foot-right">Quantum Innovation Studio</div>
+</footer>
+
 <script>
-var GST = 0.10;
-var _lastCalc = {};
+const PRESETS = {
+  'pash-pash': {
+    garnish: 0.50, sellPrice: 18.00,
+    ingredients: [
+      {name:'OY Pavlova Vodka',             serveMl:45,  stockMl:700,  stockCost:56.72},
+      {name:'Fever-Tree Mango Passionfruit', serveMl:100, stockMl:500,  stockCost:5.63 },
+      {name:'Soda water',                    serveMl:15,  stockMl:1000, stockCost:0.00 },
+      {name:'',                              serveMl:0,   stockMl:0,    stockCost:0.00 },
+      {name:'',                              serveMl:0,   stockMl:0,    stockCost:0.00 },
+      {name:'',                              serveMl:0,   stockMl:0,    stockCost:0.00 },
+    ]
+  },
+  'pavlova-sugar-sour': {
+    garnish: 0.30, sellPrice: 18.00,
+    ingredients: [
+      {name:'OY Pavlova Vodka',        serveMl:30, stockMl:700,  stockCost:56.72},
+      {name:'Giffard Watermelon Syrup',serveMl:15, stockMl:700,  stockCost:16.61},
+      {name:'Supasawa',                serveMl:15, stockMl:700,  stockCost:20.63},
+      {name:'Soda water',              serveMl:60, stockMl:1000, stockCost:0.00 },
+      {name:'',                        serveMl:0,  stockMl:0,    stockCost:0.00 },
+      {name:'',                        serveMl:0,  stockMl:0,    stockCost:0.00 },
+    ]
+  }
+};
 
-function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
-function t(id) { return document.getElementById(id).value || ''; }
-function fmt(n, d) { d = d === undefined ? 2 : d; return '$' + n.toFixed(d); }
-function fmtPct(n) { return n.toFixed(1) + '%'; }
-function cogsColor(pct) {
-  if (pct <= 18) return '#5ec97a';
-  if (pct <= 25) return '#e8c56d';
-  return '#d4545c';
-}
+let storedTotalCogs = 0;
 
-function calc() {
-  var ingredients = [
-    { nameId: 'name-1', mlId: 'ml-1', volId: 'vol-1', costId: 'cost-1', note: '' },
-    { nameId: 'name-2', mlId: 'ml-2', volId: 'vol-2', costId: 'cost-2', note: '' },
-    { nameId: 'name-3', mlId: 'ml-3', volId: 'vol-3', costId: 'cost-3', note: '' },
-    { nameId: 'name-4', mlId: 'ml-4', volId: 'vol-4', costId: 'cost-4', note: 'in-glass finisher' }
-  ];
-  var liquidCost = 0, spiritCost = 0, totalServeMl = 0, servesArr = [];
-  var tbody = document.getElementById('recipe-body');
+function fmt(n){ return '$' + n.toFixed(2); }
+function setText(id, v){ const e=document.getElementById(id); if(e) e.textContent=v; }
+
+function buildRows(ingredients){
+  const tbody = document.getElementById('ingBody');
   tbody.innerHTML = '';
-  var ingRows = [];
-
-  for (var i = 0; i < ingredients.length; i++) {
-    var r = ingredients[i];
-    var name = t(r.nameId) || ('Ingredient ' + (i + 1));
-    var ml = v(r.mlId);
-    var totalVol = v(r.volId);
-    var totalCost = v(r.costId);
-    var perMl = totalVol > 0 ? totalCost / totalVol : 0;
-    var serveCost = perMl * ml;
-    liquidCost += serveCost;
-    totalServeMl += ml;
-    if (ml > 0) servesArr.push(Math.floor(totalVol / ml));
-    if (i === 0) spiritCost = serveCost;
-    ingRows.push({ name: name, ml: ml, perMl: perMl, serveCost: serveCost, bulkVol: totalVol, bulkCost: totalCost });
-
-    var tr = document.createElement('tr');
-    tr.innerHTML =
-      '<td><div class="ing-name">' + name + '</div>' +
-      (r.note ? '<div class="ing-note">' + r.note + '</div>' : '') + '</td>' +
-      '<td class="ml-val">' + ml + '</td>' +
-      '<td class="per-ml">' + (perMl * 100).toFixed(3) + '&#162;</td>' +
-      '<td class="cost-highlight">' + fmt(serveCost) + '</td>';
+  ingredients.forEach((ing, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><input class="ing-input name-input" type="text" value="${ing.name}"
+           oninput="recalculate()" placeholder="Ingredient name"></td>
+      <td><input class="ing-input num-input" type="number" data-field="serve"
+           value="${ing.serveMl||''}" min="0" step="1" oninput="recalculate()" placeholder="ml"></td>
+      <td><input class="ing-input num-input" type="number" data-field="stock"
+           value="${ing.stockMl||''}" min="0" step="1" oninput="recalculate()" placeholder="ml"></td>
+      <td><input class="ing-input num-input" type="number" data-field="cost"
+           value="${ing.stockCost>0?ing.stockCost.toFixed(2):''}"
+           min="0" step="0.01" oninput="recalculate()" placeholder="0.00"></td>
+      <td class="calc-cell r" id="cpm_${i}">—</td>
+      <td class="calc-cell hi r" id="sc_${i}">—</td>`;
     tbody.appendChild(tr);
+  });
+}
+
+function loadPreset(key){
+  toggleDeleteBtn();
+  if(!key){
+    buildRows([{name:'',serveMl:0,stockMl:0,stockCost:0},{name:'',serveMl:0,stockMl:0,stockCost:0},{name:'',serveMl:0,stockMl:0,stockCost:0},{name:'',serveMl:0,stockMl:0,stockCost:0},{name:'',serveMl:0,stockMl:0,stockCost:0},{name:'',serveMl:0,stockMl:0,stockCost:0}]);
+    document.getElementById('garnishCost').value='0.00';
+    document.getElementById('sellPrice').value='18.00';
+    recalculate(); return;
+  }
+  if(key.startsWith('saved_')){
+    const name = key.replace('saved_','');
+    const build = getSavedBuilds().find(b=>b.name===name);
+    if(build){
+      // pad to 6 rows
+      const ings = [...build.ingredients];
+      while(ings.length<6) ings.push({name:'',serveMl:0,stockMl:0,stockCost:0});
+      buildRows(ings);
+      document.getElementById('garnishCost').value = build.garnish.toFixed(2);
+      document.getElementById('sellPrice').value   = build.sellPrice.toFixed(2);
+      recalculate();
+    }
+    return;
+  }
+  const p = PRESETS[key];
+  buildRows(p.ingredients);
+  document.getElementById('garnishCost').value = p.garnish.toFixed(2);
+  document.getElementById('sellPrice').value = p.sellPrice.toFixed(2);
+  recalculate();
+}
+
+function recalculate(){
+  const rows = document.querySelectorAll('#ingBody tr');
+  let liquidCogs=0, spiritCost=null, totalServeMl=0;
+  const recipeItems=[];
+
+  rows.forEach((tr, i) => {
+    const name    = tr.querySelector('input.name-input')?.value.trim()||'';
+    const serveMl = parseFloat(tr.querySelector('[data-field="serve"]')?.value)||0;
+    const stockMl = parseFloat(tr.querySelector('[data-field="stock"]')?.value)||0;
+    const stockCst= parseFloat(tr.querySelector('[data-field="cost"]')?.value) ||0;
+    const cpmEl   = document.getElementById('cpm_'+i);
+    const scEl    = document.getElementById('sc_'+i);
+    totalServeMl += serveMl;
+
+    if(serveMl>0 && stockMl>0){
+      const cpm = stockCst/stockMl;
+      const sc  = cpm*serveMl;
+      liquidCogs += sc;
+      if(spiritCost===null) spiritCost=sc;
+      if(cpmEl) cpmEl.textContent = (cpm*100).toFixed(2)+'¢';
+      if(scEl)  scEl.textContent  = fmt(sc);
+      if(name) recipeItems.push({name, ml:serveMl, cpm, cost:sc});
+    } else {
+      if(cpmEl) cpmEl.textContent='—';
+      if(scEl)  scEl.textContent='—';
+    }
+  });
+
+  const garnish  = parseFloat(document.getElementById('garnishCost').value)||0;
+  const totalCgs = liquidCogs + garnish;
+  storedTotalCogs = totalCgs;
+
+  const sellInc = parseFloat(document.getElementById('sellPrice').value)||0;
+  const netRev  = sellInc/1.1;
+  const gst     = sellInc-netRev;
+  const gpAmt   = netRev-totalCgs;
+  const gpPct   = netRev>0 ? (gpAmt/netRev)*100 : 0;
+  const cogsPct = netRev>0 ? (totalCgs/netRev)*100 : 0;
+
+  // total serve vol
+  setText('totalServeMl', totalServeMl>0 ? totalServeMl+'ml' : '—');
+
+  setText('liquidCogs',    fmt(liquidCogs));
+  setText('totalCogs',     fmt(totalCgs));
+  setText('netRevenue',    fmt(netRev));
+  setText('gstAmount',     fmt(gst));
+  setText('gpPerServe',    fmt(gpAmt));
+  setText('spiritCostOnly', spiritCost!==null?fmt(spiritCost):'—');
+
+  // GP bar
+  const gpColor = gpPct>=75 ? 'var(--good-lt)' : gpPct>=65 ? 'var(--warn)' : 'var(--bad-lt)';
+  const gpFill  = document.getElementById('gpBarFill');
+  gpFill.style.width = Math.min(gpPct,100)+'%';
+  gpFill.style.background = gpColor;
+  const gpPctEl = document.getElementById('gaugePct');
+  const gpValEl = document.getElementById('gaugeGpVal');
+  gpPctEl.textContent = isFinite(gpPct) ? gpPct.toFixed(1)+'%' : '—';
+  gpPctEl.style.color = isFinite(gpPct) ? gpColor : 'var(--text2)';
+  gpValEl.textContent = isFinite(gpAmt) ? fmt(gpAmt) : '—';
+  gpValEl.style.color = isFinite(gpAmt) ? gpColor : 'var(--text2)';
+
+  // COGs bar
+  const cogsColor = cogsPct<=18 ? 'var(--good)' : cogsPct<=25 ? 'var(--warn)' : 'var(--bad)';
+  document.getElementById('cogsBarFill').style.width = Math.min(cogsPct,100)+'%';
+  document.getElementById('cogsBarFill').style.background = cogsColor;
+  setText('cogsBarPct', isFinite(cogsPct)?cogsPct.toFixed(1)+'%':'—');
+
+  // recipe table
+  const recBody = document.getElementById('recipeBody');
+  recBody.innerHTML='';
+  recipeItems.forEach(item=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${item.name}</td><td>${item.ml}ml</td><td>${(item.cpm*100).toFixed(2)}¢</td><td>${fmt(item.cost)}</td>`;
+    recBody.appendChild(tr);
+  });
+  if(garnish>0){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td style="color:var(--text2);font-style:italic">Garnish / flat</td><td>—</td><td>—</td><td>${fmt(garnish)}</td>`;
+    recBody.appendChild(tr);
   }
 
-  var garnishName = t('name-garnish') || 'Garnish';
-  var garnish = v('cost-garnish');
-  var trG = document.createElement('tr');
-  trG.innerHTML =
-    '<td><div class="ing-name" style="color:var(--muted);font-style:italic">' + garnishName + '</div></td>' +
-    '<td class="ml-val">&#8212;</td><td class="per-ml">&#8212;</td>' +
-    '<td class="cost-highlight">' + fmt(garnish) + '</td>';
-  tbody.appendChild(trG);
+  // scenarios
+  const scenDefs=[
+    {label:'Breakeven',pct:0},
+    {label:'75% GP',pct:75},
+    {label:'80% GP',pct:80},
+    {label:'82% GP',pct:82},
+    {label:'85% GP',pct:85},
+  ];
+  const scDiv=document.getElementById('scenarios');
+  scDiv.innerHTML='';
+  scenDefs.forEach(sc=>{
+    const exGst = sc.pct===0 ? totalCgs : totalCgs/(1-sc.pct/100);
+    const incGst = exGst*1.1;
+    const isCurrent = Math.abs(incGst-sellInc)<0.51;
+    const card=document.createElement('div');
+    card.className='scenario-card'+(isCurrent?' current':'');
+    card.innerHTML=`<div class="scenario-pct">${sc.label}</div>
+      <div class="scenario-price${isCurrent?' current':''}">${isFinite(incGst)&&incGst<9999?fmt(incGst):'—'}</div>`;
+    scDiv.appendChild(card);
+  });
 
-  var totalCogs = liquidCost + garnish;
-  var trT = document.createElement('tr');
-  trT.style.borderTop = '1px solid #2a2a2e';
-  trT.innerHTML =
-    '<td style="color:#e8e6e1;font-weight:500;letter-spacing:0.05em;">TOTAL COGs / serve</td>' +
-    '<td style="color:#6b6a67;">' + totalServeMl + 'ml</td><td></td>' +
-    '<td style="color:#e8c56d;font-size:15px;font-weight:500;">' + fmt(totalCogs) + '</td>';
-  tbody.appendChild(trT);
+  // breakdown
+  const blData=[
+    {label:'Sell price (inc. GST)',      val:fmt(sellInc),         cls:''},
+    {label:'GST component (10%)',        val:fmt(gst),             cls:''},
+    {label:'Net revenue (ex-GST)',       val:fmt(netRev),          cls:''},
+    {label:'COGs % on net revenue',      val:cogsPct.toFixed(1)+'%',cls:''},
+    {label:'GP % on net ex-GST revenue', val:gpPct.toFixed(1)+'%', cls:'accent'},
+    {label:'Cost of goods sold',         val:fmt(totalCgs),        cls:''},
+    {label:'GP / serve (ex-GST)',        val:fmt(gpAmt),           cls:'accent'},
+  ];
+  const bl=document.getElementById('breakdownList');
+  bl.innerHTML='';
+  blData.forEach(row=>{
+    const li=document.createElement('li');
+    li.innerHTML=`<span class="bl-label">${row.label}</span><span class="bl-val ${row.cls}">${row.val}</span>`;
+    bl.appendChild(li);
+  });
 
-  document.getElementById('c-liquid').textContent = fmt(liquidCost);
-  document.getElementById('c-total').textContent = fmt(totalCogs);
-  document.getElementById('c-spirit').textContent = fmt(spiritCost);
-  document.getElementById('c-spirit-label').textContent = t('name-1') || 'ingredient 1';
-  var minServes = servesArr.length ? Math.min.apply(null, servesArr) : 0;
-  document.getElementById('c-serves').textContent = minServes;
+  // keep slider in sync with current cogs
+  updateGpSlider();
+}
 
-  var sellIncGST = v('sell-price');
-  var gstAmt = sellIncGST * GST / (1 + GST);
-  var sellExGST = sellIncGST - gstAmt;
+function updateGpSlider(){
+  const sliderPct = parseFloat(document.getElementById('gpSlider').value);
+  document.getElementById('sliderBadge').textContent = sliderPct.toFixed(1)+'%';
+  const tc = storedTotalCogs;
+  if(tc<=0){ setText('sliderSellPrice','—'); return; }
+  const exGst  = tc/(1-sliderPct/100);
+  const incGst = exGst*1.1;
+  const gpAmt  = exGst-tc;
+  const cogsPct= (tc/exGst)*100;
+  setText('sliderSellPrice', isFinite(incGst)?fmt(incGst):'—');
+  setText('sliderNetRev',    isFinite(exGst) ?fmt(exGst) :'—');
+  setText('sliderGpAmt',     isFinite(gpAmt) ?fmt(gpAmt) :'—');
+  setText('sliderCogsPct',   isFinite(cogsPct)?cogsPct.toFixed(1)+'%':'—');
+}
 
-  document.getElementById('g-sell-inc').textContent = fmt(sellIncGST);
-  document.getElementById('g-gst-amt').textContent = fmt(gstAmt);
-  document.getElementById('g-sell-ex').textContent = fmt(sellExGST);
+// ── SAVED BUILDS (localStorage) ───────────────────────────────────
+function getSavedBuilds(){
+  try{ return JSON.parse(localStorage.getItem('qi_cocktail_builds')||'[]'); }
+  catch{ return []; }
+}
 
-  var cogsPctNet = sellExGST > 0 ? (totalCogs / sellExGST) * 100 : 0;
-  var gpPctNet   = sellExGST > 0 ? ((sellExGST - totalCogs) / sellExGST) * 100 : 0;
+function populateDropdown(){
+  const sel = document.getElementById('presetSelect');
+  // Remove old saved options (keep first 3: blank, pash-pash, pavlova)
+  while(sel.options.length > 3) sel.remove(3);
+  const saved = getSavedBuilds();
+  if(saved.length > 0){
+    const grp = document.createElement('optgroup');
+    grp.label = '── Saved Builds';
+    saved.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = 'saved_'+b.name;
+      opt.textContent = b.name;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  }
+  toggleDeleteBtn();
+}
 
-  document.getElementById('g-cogs-net').textContent = fmtPct(cogsPctNet);
-  document.getElementById('g-cogs-net').className = 'gst-row-val purple';
-  var gpNetEl = document.getElementById('g-gp-net');
-  gpNetEl.textContent = fmtPct(gpPctNet);
-  gpNetEl.className = 'gst-row-val ' + (gpPctNet >= 80 ? 'green' : gpPctNet >= 75 ? 'warn' : 'bad');
+function toggleDeleteBtn(){
+  const val = document.getElementById('presetSelect').value;
+  document.getElementById('btnDelete').style.display = val.startsWith('saved_') ? '' : 'none';
+}
 
-  var fill = document.getElementById('meter-fill');
-  fill.style.width = Math.min(cogsPctNet, 100) + '%';
-  fill.style.background = cogsColor(cogsPctNet);
-  var pctEl = document.getElementById('cogs-pct');
-  pctEl.textContent = fmtPct(cogsPctNet);
-  pctEl.style.color = cogsColor(cogsPctNet);
-
-  var p75 = (totalCogs / 0.25) * (1 + GST);
-  var p80 = (totalCogs / 0.20) * (1 + GST);
-  var p82 = (totalCogs / 0.18) * (1 + GST);
-  var be  = totalCogs * (1 + GST);
-
-  document.getElementById('s-be').textContent  = fmt(be);
-  document.getElementById('s-75').textContent  = fmt(p75);
-  document.getElementById('s-80').textContent  = fmt(p80);
-  document.getElementById('s-82').textContent  = fmt(p82);
-
-  var gpEl = document.getElementById('s-gp');
-  gpEl.textContent = fmtPct(gpPctNet);
-  gpEl.className = 'sell-row-val ' + (gpPctNet >= 80 ? 'good' : gpPctNet >= 75 ? 'warn' : 'bad');
-  var cogsEl = document.getElementById('s-cogs');
-  cogsEl.textContent = fmtPct(cogsPctNet);
-  cogsEl.className = 'sell-row-val ' + (cogsPctNet <= 18 ? 'good' : cogsPctNet <= 25 ? 'warn' : 'bad');
-
-  // Cache for export
-  _lastCalc = {
-    ingRows: ingRows,
-    garnishName: garnishName, garnish: garnish,
-    liquidCost: liquidCost, totalCogs: totalCogs, totalServeMl: totalServeMl,
-    spiritCost: spiritCost, minServes: minServes,
-    sellIncGST: sellIncGST, gstAmt: gstAmt, sellExGST: sellExGST,
-    cogsPctNet: cogsPctNet, gpPctNet: gpPctNet,
-    be: be, p75: p75, p80: p80, p82: p82
+function saveBuild(){
+  const name = document.getElementById('buildName').value.trim();
+  if(!name){ showToast('Enter a name first'); return; }
+  const rows = document.querySelectorAll('#ingBody tr');
+  const ingredients = [];
+  rows.forEach(tr => {
+    ingredients.push({
+      name:      tr.querySelector('input.name-input')?.value.trim()||'',
+      serveMl:   parseFloat(tr.querySelector('[data-field="serve"]')?.value)||0,
+      stockMl:   parseFloat(tr.querySelector('[data-field="stock"]')?.value)||0,
+      stockCost: parseFloat(tr.querySelector('[data-field="cost"]')?.value) ||0,
+    });
+  });
+  const build = {
+    name,
+    garnish:   parseFloat(document.getElementById('garnishCost').value)||0,
+    sellPrice: parseFloat(document.getElementById('sellPrice').value)||18,
+    ingredients
   };
+  const saved = getSavedBuilds();
+  const idx = saved.findIndex(b => b.name === name);
+  if(idx >= 0) saved[idx] = build; else saved.push(build);
+  localStorage.setItem('qi_cocktail_builds', JSON.stringify(saved));
+  populateDropdown();
+  document.getElementById('presetSelect').value = 'saved_'+name;
+  toggleDeleteBtn();
+  document.getElementById('buildName').value = '';
+  showToast('Saved: '+name);
 }
 
-function exportXLSX() {
-  var c = _lastCalc;
-  if (!c.ingRows) { alert('Nothing to export yet.'); return; }
-
-  var wb = XLSX.utils.book_new();
-
-  // ── SHEET 1: Recipe Build ──
-  var recipeData = [
-    ['BATCH COCKTAIL BUILDER — COGs Analysis'],
-    ['Exported: ' + new Date().toLocaleDateString('en-AU')],
-    [],
-    ['RECIPE BUILD — PER SERVE'],
-    ['Ingredient', 'Serve (ml)', 'Bulk Vol (ml)', 'Bulk Cost ($)', 'Cost per ml (¢)', 'Serve Cost ($)']
-  ];
-
-  for (var i = 0; i < c.ingRows.length; i++) {
-    var r = c.ingRows[i];
-    recipeData.push([
-      r.name,
-      r.ml,
-      r.bulkVol,
-      r.bulkCost,
-      parseFloat((r.perMl * 100).toFixed(4)),
-      parseFloat(r.serveCost.toFixed(4))
-    ]);
-  }
-  recipeData.push([c.garnishName + ' (flat)', '—', '—', '—', '—', parseFloat(c.garnish.toFixed(4))]);
-  recipeData.push(['TOTAL', c.totalServeMl, '', '', '', parseFloat(c.totalCogs.toFixed(4))]);
-
-  recipeData.push([]);
-  recipeData.push(['SUMMARY']);
-  recipeData.push(['Liquid COGs / serve (ex-GST)', parseFloat(c.liquidCost.toFixed(4))]);
-  recipeData.push(['Total COGs / serve (incl. garnish, ex-GST)', parseFloat(c.totalCogs.toFixed(4))]);
-  recipeData.push(['Spirit / primary ingredient cost', parseFloat(c.spiritCost.toFixed(4))]);
-  recipeData.push(['Serves from current stock (limiting ingredient)', c.minServes]);
-
-  var ws1 = XLSX.utils.aoa_to_sheet(recipeData);
-  ws1['!cols'] = [{ wch: 34 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
-  XLSX.utils.book_append_sheet(wb, ws1, 'Recipe Build');
-
-  // ── SHEET 2: GST & Pricing ──
-  var pricingData = [
-    ['GST BREAKDOWN & SELL PRICE ANALYSIS'],
-    [],
-    ['SELL PRICE — GST BREAKDOWN', ''],
-    ['Menu price (inc. GST)', parseFloat(c.sellIncGST.toFixed(2))],
-    ['GST component (÷11)', parseFloat(c.gstAmt.toFixed(4))],
-    ['Net revenue (ex-GST)', parseFloat(c.sellExGST.toFixed(4))],
-    [],
-    ['MARGIN ANALYSIS (on ex-GST net revenue)', ''],
-    ['Total COGs', parseFloat(c.totalCogs.toFixed(4))],
-    ['COGs %', parseFloat((c.cogsPctNet / 100).toFixed(4))],
-    ['GP %', parseFloat((c.gpPctNet / 100).toFixed(4))],
-    ['GP $', parseFloat((c.sellExGST - c.totalCogs).toFixed(4))],
-    [],
-    ['SELL PRICE SCENARIOS (inc. GST menu price to hit GP target)', ''],
-    ['Breakeven (0% GP)', parseFloat(c.be.toFixed(2))],
-    ['75% GP target', parseFloat(c.p75.toFixed(2))],
-    ['80% GP target', parseFloat(c.p80.toFixed(2))],
-    ['82% GP target', parseFloat(c.p82.toFixed(2))],
-    [],
-    ['NOTE: All COGs and margin figures calculated on ex-GST net revenue.', ''],
-    ['GST extracted using the divide-by-11 method (AU standard).', '']
-  ];
-
-  var ws2 = XLSX.utils.aoa_to_sheet(pricingData);
-  // Format percentage rows
-  var pctRows = [9, 10]; // COGs % and GP % rows (0-indexed from array, +1 for sheet row)
-  ws2['!cols'] = [{ wch: 46 }, { wch: 16 }];
-
-  // Apply % format to COGs% and GP% cells
-  ['B10', 'B11'].forEach(function(cell) {
-    if (ws2[cell]) ws2[cell].z = '0.0%';
-  });
-  ['B4', 'B5', 'B6', 'B9', 'B12', 'B15', 'B16', 'B17', 'B18'].forEach(function(cell) {
-    if (ws2[cell]) ws2[cell].z = '$#,##0.00';
-  });
-
-  XLSX.utils.book_append_sheet(wb, ws2, 'GST & Pricing');
-
-  // ── SHEET 3: Stock Inputs ──
-  var stockData = [
-    ['STOCK INPUTS — as entered'],
-    [],
-    ['Ingredient', 'Serve (ml)', 'Bulk Vol (ml)', 'Bulk Cost ($)', 'Cost per ml (¢)']
-  ];
-  for (var j = 0; j < c.ingRows.length; j++) {
-    var s = c.ingRows[j];
-    stockData.push([s.name, s.ml, s.bulkVol, s.bulkCost, parseFloat((s.perMl * 100).toFixed(4))]);
-  }
-  stockData.push([c.garnishName + ' (garnish flat cost)', '—', '—', parseFloat(c.garnish.toFixed(4)), '—']);
-
-  var ws3 = XLSX.utils.aoa_to_sheet(stockData);
-  ws3['!cols'] = [{ wch: 30 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 16 }];
-  XLSX.utils.book_append_sheet(wb, ws3, 'Stock Inputs');
-
-  var filename = 'COGs_BatchCocktailBuilder_' + new Date().toISOString().slice(0,10) + '.xlsx';
-  XLSX.writeFile(wb, filename);
+function deleteBuild(){
+  const val = document.getElementById('presetSelect').value;
+  if(!val.startsWith('saved_')) return;
+  const name = val.replace('saved_','');
+  if(!confirm('Delete "'+name+'"?')) return;
+  const saved = getSavedBuilds().filter(b => b.name !== name);
+  localStorage.setItem('qi_cocktail_builds', JSON.stringify(saved));
+  populateDropdown();
+  document.getElementById('presetSelect').value = '';
+  loadPreset('');
+  showToast('Deleted: '+name);
 }
 
-calc();
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2400);
+}
+
+// ── EXPORT XLSX ────────────────────────────────────────────────────
+function exportXLSX(){
+  if(typeof XLSX === 'undefined'){ alert('XLSX library not loaded'); return; }
+  const buildLabel = document.getElementById('presetSelect').selectedOptions[0]?.text.trim()||'Custom Build';
+  const sellInc  = parseFloat(document.getElementById('sellPrice').value)||0;
+  const netRev   = sellInc/1.1;
+  const garnish  = parseFloat(document.getElementById('garnishCost').value)||0;
+  const rows = document.querySelectorAll('#ingBody tr');
+  const ingRows = [];
+  let liquidCogs = 0;
+  rows.forEach(tr => {
+    const n  = tr.querySelector('input.name-input')?.value.trim()||'';
+    const sv = parseFloat(tr.querySelector('[data-field="serve"]')?.value)||0;
+    const st = parseFloat(tr.querySelector('[data-field="stock"]')?.value)||0;
+    const co = parseFloat(tr.querySelector('[data-field="cost"]')?.value) ||0;
+    if(n||sv>0){
+      const cpm = st>0?co/st:0;
+      const sc  = cpm*sv;
+      liquidCogs += sc;
+      ingRows.push([n, sv, st, co, parseFloat((cpm*100).toFixed(2)), parseFloat(sc.toFixed(2))]);
+    }
+  });
+  const totalCogs = liquidCogs+garnish;
+  const gpAmt  = netRev-totalCogs;
+  const gpPct  = netRev>0?(gpAmt/netRev)*100:0;
+  const cogsPct= netRev>0?(totalCogs/netRev)*100:0;
+  const gst    = sellInc-netRev;
+  const totalServeMl = Array.from(rows).reduce((s,tr)=>s+(parseFloat(tr.querySelector('[data-field="serve"]')?.value)||0),0);
+
+  const ws_data = [
+    ['Cocktail COGs Analyser','Quantum Innovation Studio'],
+    ['Generated', new Date().toLocaleDateString('en-AU'), '', 'Build', buildLabel],
+    [],
+    ['BUILD PRICING'],
+    ['Ingredient','Serve ml','Stock ml','Cost ($)','¢/ml','Serve Cost ($)'],
+    ...ingRows,
+    ['Garnish / flat cost','','','','', parseFloat(garnish.toFixed(2))],
+    ['Total Serve Volume (ml)', totalServeMl],
+    [],
+    ['COGs ANALYSIS'],
+    ['Sell price (inc. GST)', parseFloat(sellInc.toFixed(2))],
+    ['GST component (10%)', parseFloat(gst.toFixed(2))],
+    ['Net revenue (ex-GST)', parseFloat(netRev.toFixed(2))],
+    ['Liquid COGs / serve', parseFloat(liquidCogs.toFixed(2))],
+    ['Total COGs / serve', parseFloat(totalCogs.toFixed(2))],
+    ['COGs % on net revenue', parseFloat(cogsPct.toFixed(1))],
+    ['GP / serve (ex-GST)', parseFloat(gpAmt.toFixed(2))],
+    ['GP % on net ex-GST revenue', parseFloat(gpPct.toFixed(1))],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(ws_data);
+  ws['!cols'] = [{wch:32},{wch:12},{wch:12},{wch:12},{wch:10},{wch:16}];
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'COGs Analysis');
+  XLSX.writeFile(wb, (buildLabel.replace(/[^a-z0-9]/gi,'_')||'cocktail')+'_cogs.xlsx');
+}
+
+// ── EXPORT PDF ─────────────────────────────────────────────────────
+function exportPDF(){
+  if(typeof window.jspdf === 'undefined'){ alert('jsPDF not loaded'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const buildLabel = document.getElementById('presetSelect').selectedOptions[0]?.text.trim()||'Custom Build';
+  const sellInc  = parseFloat(document.getElementById('sellPrice').value)||0;
+  const netRev   = sellInc/1.1;
+  const garnish  = parseFloat(document.getElementById('garnishCost').value)||0;
+  const rows     = document.querySelectorAll('#ingBody tr');
+  const ingBody  = [];
+  let liquidCogs = 0;
+  let totalServeMl = 0;
+  rows.forEach(tr => {
+    const n  = tr.querySelector('input.name-input')?.value.trim()||'';
+    const sv = parseFloat(tr.querySelector('[data-field="serve"]')?.value)||0;
+    const st = parseFloat(tr.querySelector('[data-field="stock"]')?.value)||0;
+    const co = parseFloat(tr.querySelector('[data-field="cost"]')?.value) ||0;
+    totalServeMl += sv;
+    if(n||sv>0){
+      const cpm = st>0?co/st:0;
+      const sc  = cpm*sv;
+      liquidCogs += sc;
+      ingBody.push([n, sv+'ml', st+'ml', '$'+co.toFixed(2), (cpm*100).toFixed(2)+'¢', '$'+sc.toFixed(2)]);
+    }
+  });
+  const totalCogs = liquidCogs+garnish;
+  const gpAmt  = netRev-totalCogs;
+  const gpPct  = netRev>0?(gpAmt/netRev)*100:0;
+  const cogsPct= netRev>0?(totalCogs/netRev)*100:0;
+  const gst    = sellInc-netRev;
+
+  const DARK='#1A1A22', ORANGE='#C88820', LGRAY='#C4C4D0', MID='#6A6A7A';
+
+  // Header band
+  doc.setFillColor(DARK); doc.rect(0,0,210,18,'F');
+  doc.setTextColor(LGRAY); doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text('COCKTAIL COGs ANALYSER', 14, 11);
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(MID);
+  doc.text('Quantum Innovation Studio', 14, 16);
+  doc.setTextColor(ORANGE); doc.setFontSize(8);
+  doc.text(new Date().toLocaleDateString('en-AU'), 196, 11, {align:'right'});
+
+  // Build name
+  doc.setFillColor('#18181C'); doc.rect(0,18,210,10,'F');
+  doc.setTextColor(LGRAY); doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.text(buildLabel, 14, 25);
+
+  // Build Pricing table
+  doc.setTextColor(ORANGE); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('BUILD PRICING', 14, 36);
+  doc.autoTable({
+    startY: 38,
+    head:[['Ingredient','Serve','Stock','Cost','¢/ml','Serve Cost']],
+    body:[
+      ...ingBody,
+      ['Garnish / flat cost','—','—','—','—','$'+garnish.toFixed(2)],
+      [{content:'Total Serve Volume', colSpan:1}, totalServeMl+'ml','','','',''],
+    ],
+    theme:'plain',
+    headStyles:{fillColor:DARK,textColor:LGRAY,fontSize:7,fontStyle:'bold'},
+    bodyStyles:{textColor:'#888898',fontSize:8},
+    alternateRowStyles:{fillColor:'#18181C'},
+    styles:{cellPadding:2},
+    margin:{left:14,right:14},
+  });
+
+  const y2 = doc.lastAutoTable.finalY + 8;
+
+  // COGs Analysis
+  doc.setTextColor(ORANGE); doc.setFontSize(8); doc.setFont('helvetica','bold');
+  doc.text('COGs ANALYSIS', 14, y2);
+  doc.autoTable({
+    startY: y2+2,
+    body:[
+      ['Sell price (inc. GST)',       '$'+sellInc.toFixed(2)],
+      ['GST component (10%)',         '$'+gst.toFixed(2)],
+      ['Net revenue (ex-GST)',        '$'+netRev.toFixed(2)],
+      ['Liquid COGs / serve',         '$'+liquidCogs.toFixed(2)],
+      ['Total COGs / serve',          '$'+totalCogs.toFixed(2)],
+      ['COGs % on net revenue',       cogsPct.toFixed(1)+'%'],
+      ['GP / serve (ex-GST)',         '$'+gpAmt.toFixed(2)],
+      ['GP % on net ex-GST revenue',  gpPct.toFixed(1)+'%'],
+    ],
+    theme:'plain',
+    bodyStyles:{textColor:'#888898',fontSize:8},
+    alternateRowStyles:{fillColor:'#18181C'},
+    columnStyles:{1:{textColor:LGRAY,fontStyle:'bold',halign:'right'}},
+    styles:{cellPadding:2},
+    margin:{left:14,right:14},
+  });
+
+  // Footer
+  doc.setFillColor(DARK); doc.rect(0,282,210,15,'F');
+  doc.setTextColor(MID); doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.text('All figures AUD · Menu price inc. GST · COGs ex-GST · Quantum Innovation Studio', 105, 291, {align:'center'});
+
+  doc.save((buildLabel.replace(/[^a-z0-9]/gi,'_')||'cocktail')+'_cogs.pdf');
+}
+
+
+populateDropdown();
+buildRows([
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+  {name:'',serveMl:0,stockMl:0,stockCost:0},
+]);
+recalculate();
 </script>
 </body>
 </html>
